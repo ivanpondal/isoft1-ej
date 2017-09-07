@@ -13,83 +13,51 @@ TestCase subclass: #IdiomTest
 	poolDictionaries: ''
 	category: 'CodigoRepetido-Ejercicio'!
 
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/5/2017 18:55:06'!
-after: setupBlock test: blockToTest runsInLessThan: milliseconds
-	|millisecondsBeforeRunning millisecondsAfterRunning|
-	setupBlock value.
-	millisecondsBeforeRunning _ Time millisecondClockValue milliSeconds.
-	blockToTest value.
-	millisecondsAfterRunning _ Time millisecondClockValue milliSeconds.
-	self assert: millisecondsAfterRunning - millisecondsBeforeRunning < milliseconds.! !
+!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:26:07'!
+assert: aBlock runsInLessThan: milliseconds
+	| timeInMillisecondsBeforeRunning timeInMillisecondsAfterRunning |
+	timeInMillisecondsBeforeRunning _ Time millisecondClockValue milliSeconds.
+	aBlock value.
+	timeInMillisecondsAfterRunning _ Time millisecondClockValue milliSeconds.
+	self assert: timeInMillisecondsAfterRunning - timeInMillisecondsBeforeRunning < milliseconds.! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/5/2017 19:19:45'!
-createNewCustomerBookAndAfter: setUpBlock test: failingBlock shouldFailOn: expectedException andDo: finishBlock
-| customerBook |
-	customerBook := CustomerBook  new.
-	setUpBlock value: customerBook.
-	[failingBlock value: customerBook.
-	self fail.] on: expectedException do: [:anError | finishBlock value: anError value: customerBook].
-	
-	
-! !
+!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:22:26'!
+failOrWhen: aBlock throws: anException do: handlerAction
+	[ aBlock value.
+	self fail. ] on: anException do: [ :anError | handlerAction value: anError ].! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/6/2017 00:06:08'!
-createNewCustomerBookAndTest: failingBlock shouldFailOn: expectedException andDo: finishBlock
-	self createNewCustomerBookAndAfter:  [:customerBook | ] 
-		test: failingBlock  
-		shouldFailOn: expectedException andDo: finishBlock.
-! !
-
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/5/2017 18:44:41'!
+!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:25:11'!
 test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
-	|customerBook|
+	| customerBook |
 	customerBook := CustomerBook new.
-	self test: [customerBook addCustomerNamed: 'John Lennon'] runsInLessThan: 50 milliSeconds.! !
+	self assert: [customerBook addCustomerNamed: 'John Lennon'] runsInLessThan: 50 milliSeconds.! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/5/2017 18:48:53'!
+!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:25:03'!
 test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
-	|customerBook paulMcCartney| 
+	| customerBook paulMcCartney |
 	customerBook := CustomerBook new.
 	paulMcCartney _ 'Paul McCartney'.
-	self after: [customerBook addCustomerNamed: paulMcCartney] test: [customerBook removeCustomerNamed: paulMcCartney ]  runsInLessThan: 100 milliSeconds.
+	customerBook addCustomerNamed: paulMcCartney.
+	self assert: [customerBook removeCustomerNamed: paulMcCartney ]  runsInLessThan: 100 milliSeconds.
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/6/2017 00:06:34'!
+!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:22:57'!
 test03CanNotAddACustomerWithEmptyName 
-
-	self createNewCustomerBookAndTest: [:customerBook | customerBook addCustomerNamed: ''] shouldFailOn: Error andDo: [ :anError :customerBook| 
+	| customerBook |
+	customerBook := CustomerBook new.
+	self failOrWhen: [customerBook addCustomerNamed: ''] throws: Error do:  [ :anError | 
 			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
-			self assert: customerBook isEmpty.]! !
+			self assert: customerBook isEmpty]! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/6/2017 00:07:06'!
+!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:24:44'!
 test04CanNotRemoveAndInvalidCustomer
-	| johnLennon |
+	| customerBook johnLennon |
 	johnLennon := 'John Lennon'.
-	
-	self createNewCustomerBookAndAfter:  [:customerBook | 	
-		customerBook addCustomerNamed: johnLennon.] 
-		test: [:customerBook | customerBook removeCustomerNamed: 'Paul McCartney']  
-		shouldFailOn: NotFound andDo: [ :anError :customerBook | 
+	customerBook := CustomerBook new.
+	customerBook addCustomerNamed: johnLennon.
+	self failOrWhen:  [customerBook removeCustomerNamed: 'Paul McCartney' ] throws: NotFound do: [ :anError | 
 			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ].! !
-
-!IdiomTest methodsFor: 'testing' stamp: 'bi 9/5/2017 18:46:55'!
-test: blockToTest runsInLessThan: milliseconds
-	self after: [] test: blockToTest runsInLessThan: milliseconds.! !
-
-!IdiomTest methodsFor: 'testing' stamp: 'BAB 9/3/2017 16:45:18'!
-testBlockOnNewCustomerBook: blockToTest after: setUpBlock takes: millisecondsToWait
-	| customerBook millisecondsBeforeRunning millisecondsAfterRunning |
-	customerBook _ CustomerBook new.
-	setUpBlock value: customerBook.
-	millisecondsBeforeRunning _ Time millisecondClockValue.
-	blockToTest value: customerBook.
-	millisecondsAfterRunning _ Time millisecondClockValue.
-	self assert: millisecondsAfterRunning - millisecondsBeforeRunning < millisecondsToWait.! !
-
-!IdiomTest methodsFor: 'testing' stamp: 'BAB 9/3/2017 16:45:44'!
-testBlockOnNewCustomerBook: blockToTest takes: millisecondsToWait
-	self testBlockOnNewCustomerBook: blockToTest after: [:customerBook | ] takes: millisecondsToWait.! !
+			self assert: (customerBook includesCustomerNamed: johnLennon) ]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
