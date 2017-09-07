@@ -61,16 +61,6 @@ test04CanNotRemoveAndInvalidCustomer
 		self assert: customerBook numberOfCustomers = 1.
 		self assert: (customerBook includesCustomerNamed: johnLennon) ].! !
 
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'IdiomTest class' category: #'CodigoRepetido-Ejercicio'!
-IdiomTest class
-	instanceVariableNames: ''!
-
-!IdiomTest class methodsFor: 'testing' stamp: 'bi 9/5/2017 18:32:01'!
-test: aBlockClosure runsInLessThan: aDuration 
-	self shouldBeImplemented.! !
-
 
 !classDefinition: #CustomerBook category: #'CodigoRepetido-Ejercicio'!
 Object subclass: #CustomerBook
