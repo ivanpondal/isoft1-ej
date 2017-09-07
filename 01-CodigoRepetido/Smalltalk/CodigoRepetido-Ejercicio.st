@@ -21,10 +21,10 @@ assert: aBlock runsInLessThan: milliseconds
 	timeInMillisecondsAfterRunning _ Time millisecondClockValue milliSeconds.
 	self assert: timeInMillisecondsAfterRunning - timeInMillisecondsBeforeRunning < milliseconds.! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:22:26'!
-failOrWhen: aBlock throws: anException do: handlerAction
+!IdiomTest methodsFor: 'testing' stamp: 'BAB 9/7/2017 12:41:19'!
+should: aBlock raise: anException withExceptionDo: handlerAction
 	[ aBlock value.
-	self fail. ] on: anException do: [ :anError | handlerAction value: anError ].! !
+		self fail] on: anException do: handlerAction.! !
 
 !IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:25:11'!
 test01AddingCustomerShouldNotTakeMoreThan50Milliseconds
@@ -41,23 +41,25 @@ test02RemovingCustomerShouldNotTakeMoreThan100Milliseconds
 	self assert: [customerBook removeCustomerNamed: paulMcCartney ]  runsInLessThan: 100 milliSeconds.
 ! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:22:57'!
+!IdiomTest methodsFor: 'testing' stamp: 'BAB 9/7/2017 12:15:57'!
 test03CanNotAddACustomerWithEmptyName 
 	| customerBook |
 	customerBook := CustomerBook new.
-	self failOrWhen: [customerBook addCustomerNamed: ''] throws: Error do:  [ :anError | 
-			self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
-			self assert: customerBook isEmpty]! !
+	self should: [customerBook addCustomerNamed: ''] raise: Error withExceptionDo:  
+	[ :anError | 
+		self assert: anError messageText = CustomerBook customerCanNotBeEmptyErrorMessage.
+		self assert: customerBook isEmpty].! !
 
-!IdiomTest methodsFor: 'testing' stamp: 'ivan 9/6/2017 21:24:44'!
+!IdiomTest methodsFor: 'testing' stamp: 'BAB 9/7/2017 12:15:23'!
 test04CanNotRemoveAndInvalidCustomer
 	| customerBook johnLennon |
 	johnLennon := 'John Lennon'.
 	customerBook := CustomerBook new.
 	customerBook addCustomerNamed: johnLennon.
-	self failOrWhen:  [customerBook removeCustomerNamed: 'Paul McCartney' ] throws: NotFound do: [ :anError | 
-			self assert: customerBook numberOfCustomers = 1.
-			self assert: (customerBook includesCustomerNamed: johnLennon) ]! !
+	self should:  [customerBook removeCustomerNamed: 'Paul McCartney' ] raise: NotFound withExceptionDo:
+	[ :anError | 
+		self assert: customerBook numberOfCustomers = 1.
+		self assert: (customerBook includesCustomerNamed: johnLennon) ].! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
