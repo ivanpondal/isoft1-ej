@@ -289,10 +289,10 @@ initalizeWith: aValue
 	
 	! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HW 9/7/2017 21:23:21'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/10/2017 22:33:49'!
 + anAdder 
-	(anAdder isKindOf: self class) ifTrue: [ ^self class with: value + anAdder integerValue ].
-	^ (Fraccion with: self * anAdder denominator + anAdder numerator over: anAdder denominator).
+	^anAdder plusEntero: self.
+	
 ! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HW 9/7/2017 21:33:55'!
@@ -309,6 +309,14 @@ initalizeWith: aValue
 greatestCommonDivisorWith: anEntero 
 	
 	^self class with: (value gcd: anEntero integerValue)! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/10/2017 22:32:21'!
+plusEntero: anAdder
+	^self class with: value + anAdder integerValue.! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/10/2017 22:30:29'!
+plusFraccion: anAdder
+	^anAdder plusEntero: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -371,21 +379,25 @@ hash
 	^ aMultiplier  * self
 	! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/7/2017 21:27:06'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'BAB 9/10/2017 22:34:13'!
 + anAdder 
-	
-	| newNumerator newDenominator |
-	(anAdder isKindOf: self class) ifTrue: [
-	newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
-	newDenominator := denominator * anAdder denominator.
-	^newNumerator / newDenominator ].
-	^ anAdder + self
-	! !
+	^anAdder plusFraccion: self.! !
 
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/7/2017 21:38:44'!
 / aDivisor 
 	(aDivisor isKindOf: self class) ifTrue: [ ^(numerator * aDivisor denominator) / (denominator * aDivisor numerator) ].
 	^ self * (Fraccion with: (Entero with: 1) over: aDivisor)! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'BAB 9/10/2017 22:22:58'!
+plusEntero: anAdder
+	^ (self class with: anAdder * self denominator + self numerator over: self denominator).! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'BAB 9/10/2017 22:26:26'!
+plusFraccion: anAdder
+	| newNumerator newDenominator |
+	newNumerator := (numerator * anAdder denominator) + (denominator * anAdder numerator).
+	newDenominator := denominator * anAdder denominator.
+	^newNumerator / newDenominator.! !
 
 
 !Fraccion methodsFor: 'accessing' stamp: 'HernanWilkinson 5/7/2016 21:56'!
@@ -397,7 +409,6 @@ denominator
 numerator
 
 	^ numerator! !
-
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
