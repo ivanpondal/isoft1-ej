@@ -211,6 +211,10 @@ Object subclass: #Numero
 dividirEntero: unEntero
 	self subclassResponsibility.! !
 
+!Numero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 23:20:27'!
+dividirEnteroCero
+	^ EnteroCero new.! !
+
 !Numero methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:31:15'!
 dividirFraccion: unaFraccion
 	self subclassResponsibility.! !
@@ -304,8 +308,8 @@ hash
 	^value hash! !
 
 
-!Entero methodsFor: 'initialization' stamp: 'HernanWilkinson 5/7/2016 20:09'!
-initalizeWith: aValue 
+!Entero methodsFor: 'initialization' stamp: 'HW 9/13/2017 22:05:31'!
+initializeWith: aValue 
 	
 	value := aValue! !
 
@@ -320,22 +324,19 @@ initalizeWith: aValue
 + anAdder
 	^ anAdder sumarConEntero: self.! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:31:33'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 20:53:20'!
 / aDivisor
-	^ aDivisor dividirEntero: self.! !
+	| greatestCommonDivisor numerator denominator |
+	
+	greatestCommonDivisor := aDivisor greatestCommonDivisorWith: self. 
+	numerator := self // greatestCommonDivisor.
+	denominator := aDivisor // greatestCommonDivisor.
+	^ denominator dividirEntero: numerator.! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:55'!
 // aDivisor 
 	
 	^self class with: value // aDivisor integerValue! !
-
-!Entero methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:35:43'!
-dividirEntero: unEntero 
-	^ Fraccion with: unEntero over: self! !
-
-!Entero methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:50:32'!
-dividirFraccion: unaFraccion 
-	^ unaFraccion * (Fraccion with: (Entero with: 1) over: self)! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:00'!
 greatestCommonDivisorWith: anEntero 
@@ -364,13 +365,95 @@ sumarConFraccion: unaFraccion
 Entero class
 	instanceVariableNames: ''!
 
-!Entero class methodsFor: 'instance creation' stamp: 'HernanWilkinson 5/7/2016 22:53'!
+!Entero class methodsFor: 'instance creation' stamp: 'HW 9/13/2017 22:05:51'!
 with: aValue 
 	
 	"Esta verificacion esta puesta por si se equivocan y quieren crear un Entero pasando otra cosa que un Integer - Hernan"
 	aValue isInteger ifFalse: [  self error: 'aValue debe ser anInteger' ].
 	
-	^self new initalizeWith: aValue! !
+	(aValue = 0) ifTrue: [ ^ EnteroCero new ].
+	(aValue = 1) ifTrue: [ ^ EnteroUno new ].
+	
+	^ EnteroMayorAUno new initializeWith: aValue! !
+
+
+!classDefinition: #EnteroCero category: #'Numero-Exercise'!
+Entero subclass: #EnteroCero
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 23:20:57'!
+/ aDivisor
+	^ aDivisor dividirEnteroCero.! !
+
+!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 22:13:47'!
+dividirEntero: unEntero 
+	^ self error: Numero canNotDivideByZeroErrorDescription! !
+
+!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 23:20:39'!
+dividirEnteroCero
+	^ self error: Numero canNotDivideByZeroErrorDescription! !
+
+!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 22:13:55'!
+dividirFraccion: unaFraccion 
+	^ self error: Numero canNotDivideByZeroErrorDescription! !
+
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'EnteroCero class' category: #'Numero-Exercise'!
+EnteroCero class
+	instanceVariableNames: ''!
+
+!EnteroCero class methodsFor: 'instance creation' stamp: 'HW 9/13/2017 21:28:25'!
+new
+	^ super new initializeWith: 0! !
+
+
+!classDefinition: #EnteroMayorAUno category: #'Numero-Exercise'!
+Entero subclass: #EnteroMayorAUno
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 22:38:11'!
+dividirEntero: unEntero 
+" Este mensaje tiene como precondición que self y unEntero sean coprimos "
+	^ Fraccion new initializeWith: unEntero over: self! !
+
+!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 21:11:48'!
+dividirFraccion: unaFraccion 
+	^ unaFraccion * (Fraccion with: (Entero with: 1) over: self)! !
+
+
+!classDefinition: #EnteroUno category: #'Numero-Exercise'!
+Entero subclass: #EnteroUno
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Numero-Exercise'!
+
+!EnteroUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 21:16:33'!
+dividirEntero: unEntero 
+	^  unEntero! !
+
+!EnteroUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 21:17:17'!
+dividirFraccion: unaFraccion 
+	^  unaFraccion! !
+
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'EnteroUno class' category: #'Numero-Exercise'!
+EnteroUno class
+	instanceVariableNames: ''!
+
+!EnteroUno class methodsFor: 'instance creation' stamp: 'HW 9/13/2017 21:28:34'!
+new
+	^ super new initializeWith: 1! !
 
 
 !classDefinition: #Fraccion category: #'Numero-Exercise'!
@@ -425,6 +508,10 @@ hash
 / aDivisor 
 	^ aDivisor dividirFraccion: self! !
 
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 20:56:56'!
+// unEntero 
+	^  Fraccion new initializeWith: numerator // unEntero over: denominator! !
+
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:48:14'!
 dividirEntero: unEntero 
 	^ unEntero * (Fraccion with: self denominator over: self numerator )! !
@@ -432,6 +519,11 @@ dividirEntero: unEntero
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:41:01'!
 dividirFraccion: unaFraccion
 	^ unaFraccion * (Fraccion with: self denominator over: self numerator)! !
+
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 20:51:28'!
+greatestCommonDivisorWith: unEntero
+
+	^ numerator greatestCommonDivisorWith: unEntero ! !
 
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:16:42'!
 multiplicarConEntero: unEntero 
@@ -471,19 +563,8 @@ numerator
 Fraccion class
 	instanceVariableNames: ''!
 
-!Fraccion class methodsFor: 'intance creation' stamp: 'HernanWilkinson 5/7/2016 20:41'!
+!Fraccion class methodsFor: 'intance creation' stamp: 'HW 9/13/2017 20:58:55'!
 with: aDividend over: aDivisor
 
-	| greatestCommonDivisor numerator denominator |
-	
-	aDivisor isZero ifTrue: [ self error: self canNotDivideByZeroErrorDescription ].
-	aDividend isZero ifTrue: [ ^aDividend ].
-	
-	greatestCommonDivisor := aDividend greatestCommonDivisorWith: aDivisor. 
-	numerator := aDividend // greatestCommonDivisor.
-	denominator := aDivisor // greatestCommonDivisor.
-	
-	denominator isOne ifTrue: [ ^numerator ].
-
-	^self new initializeWith: numerator over: denominator
+	^ aDividend / aDivisor
 	! !
