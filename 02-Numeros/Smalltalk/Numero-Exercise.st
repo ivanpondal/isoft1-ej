@@ -341,8 +341,8 @@ initializeWith: aValue
 comoDenominadorYNumerador: unEntero
 	self subclassResponsibility.! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:32:52'!
-dividirEntero: anEntero
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:57:51'!
+dividirEntero: unEntero
 	self subclassResponsibility.! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:00:38'!
@@ -426,9 +426,9 @@ comoDenominadorYNumerador: unEntero
 " Este mensaje tiene como precondición que self y unEntero sean coprimos "
 	^ Fraccion new initializeWith: unEntero over: self! !
 
-!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:31:32'!
-dividirEntero: anEntero
-	^ Fraccion with: anEntero over: self.! !
+!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:58:36'!
+dividirEntero: unEntero
+	^ Fraccion with: unEntero over: self.! !
 
 
 !classDefinition: #EnteroUno category: #'Numero-Exercise'!
@@ -442,9 +442,9 @@ Entero subclass: #EnteroUno
 comoDenominadorYNumerador: unEntero 
 	^  unEntero! !
 
-!EnteroUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:31:51'!
-dividirEntero: anEntero
-	^ anEntero.! !
+!EnteroUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:58:49'!
+dividirEntero: unEntero
+	^ unEntero.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
