@@ -167,6 +167,14 @@ test26AFraccionCanNotBeOne
 
 	self deny: oneHalf isOne! !
 
+!NumeroTest methodsFor: 'tests' stamp: 'BAB 9/14/2017 10:29:59'!
+test27ZeroCanNotDivideZero
+	self 
+		should: [ zero / zero ]
+		raise: Error
+		withExceptionDo: [ :anError | self assert: anError messageText equals: Numero canNotDivideByZeroErrorDescription ]
+	! !
+
 
 !NumeroTest methodsFor: 'setup' stamp: 'HernanWilkinson 5/7/2016 20:56'!
 setUp
@@ -210,10 +218,6 @@ Object subclass: #Numero
 !Numero methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:31:33'!
 dividirEntero: unEntero
 	self subclassResponsibility.! !
-
-!Numero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 23:20:27'!
-dividirEnteroCero
-	^ EnteroCero new.! !
 
 !Numero methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:31:15'!
 dividirFraccion: unaFraccion
@@ -324,19 +328,26 @@ initializeWith: aValue
 + anAdder
 	^ anAdder sumarConEntero: self.! !
 
-!Entero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 20:53:20'!
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 00:29:58'!
 / aDivisor
-	| greatestCommonDivisor numerator denominator |
-	
-	greatestCommonDivisor := aDivisor greatestCommonDivisorWith: self. 
-	numerator := self // greatestCommonDivisor.
-	denominator := aDivisor // greatestCommonDivisor.
-	^ denominator dividirEntero: numerator.! !
+	^ aDivisor dividirEntero: self.! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:55'!
 // aDivisor 
 	
 	^self class with: value // aDivisor integerValue! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:33:46'!
+comoDenominadorYNumerador: unEntero
+	self subclassResponsibility.! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:32:52'!
+dividirEntero: anEntero
+	self subclassResponsibility.! !
+
+!Entero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:00:38'!
+dividirFraccion: unaFraccion 
+	^ unaFraccion * (Fraccion with: (Entero with: 1) over: self)! !
 
 !Entero methodsFor: 'arithmetic operations' stamp: 'HernanWilkinson 5/7/2016 21:00'!
 greatestCommonDivisorWith: anEntero 
@@ -384,22 +395,13 @@ Entero subclass: #EnteroCero
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 23:20:57'!
-/ aDivisor
-	^ aDivisor dividirEnteroCero.! !
+!EnteroCero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:18:16'!
+comoDenominadorYNumerador: unEntero 
+	^ self error: Numero canNotDivideByZeroErrorDescription! !
 
-!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 22:13:47'!
+!EnteroCero methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:27:42'!
 dividirEntero: unEntero 
 	^ self error: Numero canNotDivideByZeroErrorDescription! !
-
-!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 23:20:39'!
-dividirEnteroCero
-	^ self error: Numero canNotDivideByZeroErrorDescription! !
-
-!EnteroCero methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 22:13:55'!
-dividirFraccion: unaFraccion 
-	^ self error: Numero canNotDivideByZeroErrorDescription! !
-
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -419,14 +421,14 @@ Entero subclass: #EnteroMayorAUno
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 22:38:11'!
-dividirEntero: unEntero 
+!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 00:32:55'!
+comoDenominadorYNumerador: unEntero 
 " Este mensaje tiene como precondición que self y unEntero sean coprimos "
 	^ Fraccion new initializeWith: unEntero over: self! !
 
-!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 21:11:48'!
-dividirFraccion: unaFraccion 
-	^ unaFraccion * (Fraccion with: (Entero with: 1) over: self)! !
+!EnteroMayorAUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:31:32'!
+dividirEntero: anEntero
+	^ Fraccion with: anEntero over: self.! !
 
 
 !classDefinition: #EnteroUno category: #'Numero-Exercise'!
@@ -436,14 +438,13 @@ Entero subclass: #EnteroUno
 	poolDictionaries: ''
 	category: 'Numero-Exercise'!
 
-!EnteroUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 21:16:33'!
-dividirEntero: unEntero 
+!EnteroUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 00:34:06'!
+comoDenominadorYNumerador: unEntero 
 	^  unEntero! !
 
-!EnteroUno methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 21:17:17'!
-dividirFraccion: unaFraccion 
-	^  unaFraccion! !
-
+!EnteroUno methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:31:51'!
+dividirEntero: anEntero
+	^ anEntero.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -508,30 +509,21 @@ hash
 / aDivisor 
 	^ aDivisor dividirFraccion: self! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 20:56:56'!
-// unEntero 
-	^  Fraccion new initializeWith: numerator // unEntero over: denominator! !
-
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:48:14'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:10:58'!
 dividirEntero: unEntero 
-	^ unEntero * (Fraccion with: self denominator over: self numerator )! !
+	^ unEntero * (Fraccion with: denominator over: numerator )! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:41:01'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:11:23'!
 dividirFraccion: unaFraccion
-	^ unaFraccion * (Fraccion with: self denominator over: self numerator)! !
-
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/13/2017 20:51:28'!
-greatestCommonDivisorWith: unEntero
-
-	^ numerator greatestCommonDivisorWith: unEntero ! !
+	^ unaFraccion * (Fraccion with: denominator over: numerator)! !
 
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:16:42'!
 multiplicarConEntero: unEntero 
 	^ unEntero multiplicarConFraccion: self! !
 
-!Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 20:11:10'!
+!Fraccion methodsFor: 'arithmetic operations' stamp: 'BAB 9/14/2017 10:12:22'!
 multiplicarConFraccion: unaFraccion 
-	^  Fraccion with: unaFraccion numerator * self numerator over: unaFraccion denominator  * denominator! !
+	^  Fraccion with: unaFraccion numerator * numerator over: unaFraccion denominator  * denominator! !
 
 !Fraccion methodsFor: 'arithmetic operations' stamp: 'HW 9/12/2017 19:47:53'!
 sumarConEntero: unEntero
@@ -563,8 +555,12 @@ numerator
 Fraccion class
 	instanceVariableNames: ''!
 
-!Fraccion class methodsFor: 'intance creation' stamp: 'HW 9/13/2017 20:58:55'!
+!Fraccion class methodsFor: 'intance creation' stamp: 'BAB 9/14/2017 00:33:31'!
 with: aDividend over: aDivisor
-
-	^ aDividend / aDivisor
+	| greatestCommonDivisor numerator denominator |
+	
+	greatestCommonDivisor := aDividend greatestCommonDivisorWith: aDivisor. 
+	numerator := aDividend // greatestCommonDivisor.
+	denominator := aDivisor // greatestCommonDivisor.
+	^ denominator comoDenominadorYNumerador: numerator.
 	! !
