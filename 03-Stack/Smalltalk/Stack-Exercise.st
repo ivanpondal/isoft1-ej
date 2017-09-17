@@ -137,9 +137,161 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 ! !
 
 
+!classDefinition: #InmutableStack category: #'Stack-Exercise'!
+Object subclass: #InmutableStack
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!InmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:24:32'!
+bottom
+	self subclassResponsibility.! !
+
+!InmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/16/2017 19:05:08'!
+isEmpty
+	self subclassResponsibility.! !
+
+!InmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:04:34'!
+push: anObjectToPush
+	^ NonEmptyInmutableStack with: anObjectToPush onTopOf: self.! !
+
+!InmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:19:28'!
+size
+	self subclassResponsibility.! !
+
+!InmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/16/2017 19:04:25'!
+top
+	self subclassResponsibility.! !
+
+
+!classDefinition: #EmptyInmutableStack category: #'Stack-Exercise'!
+InmutableStack subclass: #EmptyInmutableStack
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!EmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:24:46'!
+bottom
+	^ self signalEmptyStackError.! !
+
+!EmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/16/2017 19:05:28'!
+isEmpty
+	^ true.! !
+
+!EmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:59:23'!
+signalEmptyStackError
+	^ self error: OOStack stackEmptyErrorDescription.! !
+
+!EmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:19:04'!
+size
+	^ 0.! !
+
+!EmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:58:04'!
+top
+	^ self signalEmptyStackError.! !
+
+
+!classDefinition: #NonEmptyInmutableStack category: #'Stack-Exercise'!
+InmutableStack subclass: #NonEmptyInmutableStack
+	instanceVariableNames: 'topObject bottomStack'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!NonEmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:24:01'!
+bottom
+	^ bottomStack.! !
+
+!NonEmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:03:18'!
+initializeWith: aTopObject onTopOf: aBottomStack
+	topObject := aTopObject.
+	bottomStack := aBottomStack.! !
+
+!NonEmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:59:38'!
+isEmpty
+	^ false.! !
+
+!NonEmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:20:13'!
+size
+	^ bottomStack size + 1.! !
+
+!NonEmptyInmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:59:45'!
+top
+	^ topObject.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'NonEmptyInmutableStack class' category: #'Stack-Exercise'!
+NonEmptyInmutableStack class
+	instanceVariableNames: ''!
+
+!NonEmptyInmutableStack class methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:03:12'!
+with: aTopObject onTopOf: aBottomStack
+	| newStack |
+	newStack := self new.
+	newStack initializeWith: aTopObject onTopOf: aBottomStack.
+	^ newStack.! !
+
+
+!classDefinition: #MutableStack category: #'Stack-Exercise'!
+Object subclass: #MutableStack
+	instanceVariableNames: 'internalInmutableStack'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:14:09'!
+initialize
+	internalInmutableStack := EmptyInmutableStack new.! !
+
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:55:14'!
+isEmpty
+	^ internalInmutableStack isEmpty.! !
+
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:24:22'!
+pop
+	| topObject |
+	topObject := internalInmutableStack top.
+	internalInmutableStack := internalInmutableStack bottom.
+	^ topObject .! !
+
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:15:55'!
+push: anObjectToPush
+	internalInmutableStack := internalInmutableStack push: anObjectToPush .! !
+
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:19:49'!
+size
+	^ internalInmutableStack size.! !
+
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:16:09'!
+top
+	^ internalInmutableStack top.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MutableStack class' category: #'Stack-Exercise'!
+MutableStack class
+	instanceVariableNames: ''!
+
+!MutableStack class methodsFor: 'error descriptions' stamp: 'BAB 9/17/2017 10:55:14'!
+stackEmptyErrorDescription
+	
+	^ 'Stack is empty'! !
+
+
+!MutableStack class methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:56:32'!
+empty
+	| emptyStack |
+	emptyStack := self new.
+	emptyStack initialize.
+	^ emptyStack! !
+
+
 !classDefinition: #OOStack category: #'Stack-Exercise'!
 Object subclass: #OOStack
-	instanceVariableNames: ''
+	instanceVariableNames: 'internalInmutableStack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
@@ -154,3 +306,11 @@ OOStack class
 stackEmptyErrorDescription
 	
 	^ 'Stack is empty'! !
+
+
+!OOStack class methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:57:03'!
+new
+	| emptyStack |
+	emptyStack := MutableStack new.
+	emptyStack initialize.
+	^ emptyStack! !
