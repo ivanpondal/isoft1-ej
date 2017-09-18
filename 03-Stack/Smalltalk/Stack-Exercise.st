@@ -137,46 +137,38 @@ test10CanNotTopWhenThereAreNoObjectsInTheStack
 ! !
 
 
-!classDefinition: #Stack category: #'Stack-Exercise'!
-Object subclass: #Stack
+!classDefinition: #ImmutableStack category: #'Stack-Exercise'!
+Object subclass: #ImmutableStack
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:19'!
+!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:52:52'!
+bottom
+	self subclassResponsibility! !
+
+!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:51:56'!
 isEmpty
 	self subclassResponsibility! !
 
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:11'!
+!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:46:49'!
 pop
-	self subclassResponsibility! !
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:02'!
-push: anObjectToPush
-	self subclassResponsibility! !
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:14'!
-size
-	self subclassResponsibility! !
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:08'!
-top
-	self subclassResponsibility! !
-
-
-!classDefinition: #ImmutableStack category: #'Stack-Exercise'!
-Stack subclass: #ImmutableStack
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Stack-Exercise'!
+	self error: 'No se puede modificar una immutable'.! !
 
 !ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:36:20'!
 push: anObjectToPush
 	^ NonEmptyImmutableStack
 		with: anObjectToPush
 		onTopOf: self.! !
+
+!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:51:53'!
+size
+	self subclassResponsibility! !
+
+!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:51:35'!
+top
+	self subclassResponsibility! !
 
 
 !classDefinition: #EmptyImmutableStack category: #'Stack-Exercise'!
@@ -247,6 +239,34 @@ with: aTopObject onTopOf: aBottomStack
 	newStack := self new.
 	newStack initializeWith: aTopObject onTopOf: aBottomStack.
 	^ newStack.! !
+
+
+!classDefinition: #Stack category: #'Stack-Exercise'!
+Object subclass: #Stack
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:19'!
+isEmpty
+	self subclassResponsibility! !
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:11'!
+pop
+	self subclassResponsibility! !
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:02'!
+push: anObjectToPush
+	self subclassResponsibility! !
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:14'!
+size
+	self subclassResponsibility! !
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:08'!
+top
+	self subclassResponsibility! !
 
 
 !classDefinition: #MutableStack category: #'Stack-Exercise'!
