@@ -251,37 +251,37 @@ with: aTopObject onTopOf: aBottomStack
 
 !classDefinition: #MutableStack category: #'Stack-Exercise'!
 Stack subclass: #MutableStack
-	instanceVariableNames: 'internalInmutableStack'
+	instanceVariableNames: 'internalImmutableStack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:35:45'!
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
 initialize
-	internalInmutableStack _ EmptyImmutableStack new.! !
+	internalImmutableStack _ EmptyImmutableStack new.! !
 
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:55:14'!
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
 isEmpty
-	^ internalInmutableStack isEmpty.! !
+	^ internalImmutableStack isEmpty.! !
 
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:24:22'!
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
 pop
 	| topObject |
-	topObject := internalInmutableStack top.
-	internalInmutableStack := internalInmutableStack bottom.
-	^ topObject .! !
+	topObject _ internalImmutableStack top.
+	internalImmutableStack _ internalImmutableStack bottom.
+	^ topObject.! !
 
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:15:55'!
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
 push: anObjectToPush
-	internalInmutableStack := internalInmutableStack push: anObjectToPush .! !
+	internalImmutableStack _ internalImmutableStack push: anObjectToPush.! !
 
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:19:49'!
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
 size
-	^ internalInmutableStack size.! !
+	^ internalImmutableStack size.! !
 
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:16:09'!
+!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
 top
-	^ internalInmutableStack top.! !
+	^ internalImmutableStack top.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
