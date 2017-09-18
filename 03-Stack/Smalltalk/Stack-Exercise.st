@@ -305,7 +305,7 @@ empty
 
 !classDefinition: #OOStack category: #'Stack-Exercise'!
 Stack subclass: #OOStack
-	instanceVariableNames: 'internalInmutableStack'
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
