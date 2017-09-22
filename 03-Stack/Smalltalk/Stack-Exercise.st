@@ -5,170 +5,138 @@ TestCase subclass: #OOStackTest
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!OOStackTest methodsFor: 'test' stamp: 'HernanWilkinson 5/7/2012 11:30'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test01StackShouldBeEmptyWhenCreated
-
 	| stack |
-	
-	stack := OOStack new.
-	
-	self assert: stack isEmpty! !
+	stack _ OOStack new.
+	self assert: stack isEmpty.! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HernanWilkinson 5/7/2012 11:30'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test02PushAddElementsToTheStack
-
 	| stack |
-	
-	stack := OOStack new.
+	stack _ OOStack new.
 	stack push: 'Something'.
-	
-	self deny: stack isEmpty! !
+	self deny: stack isEmpty.! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HernanWilkinson 5/7/2012 11:31'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test03PopRemovesElementsFromTheStack
-
 	| stack |
-	
-	stack := OOStack new.
+	stack _ OOStack new.
 	stack push: 'Something'.
 	stack pop.
-	
-	self assert: stack isEmpty! !
+	self assert: stack isEmpty.! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HernanWilkinson 5/8/2012 08:20'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test04PopReturnsLastPushedObject
-
 	| stack pushedObject |
-	
-	stack := OOStack new.
-	pushedObject := 'Something'.
+	stack _ OOStack new.
+	pushedObject _ 'Something'.
 	stack push: pushedObject.
-	
-	self assert: stack pop = pushedObject! !
+	self assert: stack pop = pushedObject.! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HernanWilkinson 5/7/2012 11:33'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test05StackBehavesLIFO
-
 	| stack firstPushedObject secondPushedObject |
-	
-	stack := OOStack new.
-	firstPushedObject := 'First'.
-	secondPushedObject := 'Second'.
-	
+	stack _ OOStack new.
+	firstPushedObject _ 'First'.
+	secondPushedObject _ 'Second'.
 	stack push: firstPushedObject.
 	stack push: secondPushedObject.
-	
 	self assert: stack pop = secondPushedObject.
 	self assert: stack pop = firstPushedObject.
-	self assert: stack isEmpty 
-	! !
+	self assert: stack isEmpty.! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HernanWilkinson 5/7/2012 11:35'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test06TopReturnsLastPushedObject
-
 	| stack pushedObject |
-	
-	stack := OOStack new.
-	pushedObject := 'Something'.
-	
+	stack _ OOStack new.
+	pushedObject _ 'Something'.
 	stack push: pushedObject.
-	
-	self assert: stack top = pushedObject.
-	! !
+	self assert: stack top = pushedObject.! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HernanWilkinson 5/7/2012 11:36'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test07TopDoesNotRemoveObjectFromStack
-
 	| stack pushedObject |
-	
-	stack := OOStack new.
-	pushedObject := 'Something'.
-	
+	stack _ OOStack new.
+	pushedObject _ 'Something'.
 	stack push: pushedObject.
-	
 	self assert: stack size = 1.
 	stack top.
-	self assert: stack size = 1.
-	! !
+	self assert: stack size = 1.! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HAW 4/14/2017 22:48:26'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test08CanNotPopWhenThereAreNoObjectsInTheStack
-
-	| stack  |
-	
-	stack := OOStack new.
+	| stack |
+	stack _ OOStack new.
 	self
 		should: [ stack pop ]
-		raise: Error - MessageNotUnderstood 
+		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = OOStack stackEmptyErrorDescription ]
-		
-! !
+			self assert: anError messageText = OOStack stackEmptyErrorDescription ].! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HAW 4/14/2017 22:48:36'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test09CanNotPopWhenThereAreNoObjectsInTheStackAndTheStackHadObjects
-
-	| stack  |
-	
-	stack := OOStack new.
+	| stack |
+	stack _ OOStack new.
 	stack push: 'Something'.
 	stack pop.
-	
 	self
 		should: [ stack pop ]
-		raise: Error - MessageNotUnderstood 
+		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = OOStack stackEmptyErrorDescription ]
-		
-! !
+			self assert: anError messageText = OOStack stackEmptyErrorDescription ].! !
 
-!OOStackTest methodsFor: 'test' stamp: 'HAW 4/14/2017 22:48:44'!
+!OOStackTest methodsFor: 'test' stamp: 'BAB 9/22/2017 14:48:50'!
 test10CanNotTopWhenThereAreNoObjectsInTheStack
-
-	| stack  |
-	
-	stack := OOStack new.
+	| stack |
+	stack _ OOStack new.
 	self
 		should: [ stack top ]
-		raise: Error - MessageNotUnderstood 
+		raise: Error - MessageNotUnderstood
 		withExceptionDo: [ :anError |
-			self assert: anError messageText = OOStack stackEmptyErrorDescription ]
-		
-! !
+			self assert: anError messageText = OOStack stackEmptyErrorDescription ].! !
 
 
-!classDefinition: #ImmutableStack category: #'Stack-Exercise'!
-Object subclass: #ImmutableStack
+!classDefinition: #Stack category: #'Stack-Exercise'!
+Object subclass: #Stack
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
 
-!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:52:52'!
-bottom
-	self subclassResponsibility! !
-
-!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:51:56'!
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:19'!
 isEmpty
 	self subclassResponsibility! !
 
-!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:46:49'!
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:11'!
 pop
-	self error: 'No se puede modificar una immutable'.! !
+	self subclassResponsibility! !
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:02'!
+push: anObjectToPush
+	self subclassResponsibility! !
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:14'!
+size
+	self subclassResponsibility! !
+
+!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:08'!
+top
+	self subclassResponsibility! !
+
+
+!classDefinition: #ImmutableStack category: #'Stack-Exercise'!
+Stack subclass: #ImmutableStack
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Stack-Exercise'!
 
 !ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:36:20'!
 push: anObjectToPush
 	^ NonEmptyImmutableStack
 		with: anObjectToPush
 		onTopOf: self.! !
-
-!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:51:53'!
-size
-	self subclassResponsibility! !
-
-!ImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 17:51:35'!
-top
-	self subclassResponsibility! !
 
 
 !classDefinition: #EmptyImmutableStack category: #'Stack-Exercise'!
@@ -186,7 +154,7 @@ bottom
 isEmpty
 	^ true.! !
 
-!EmptyImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:59:23'!
+!EmptyImmutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/22/2017 14:48:50'!
 signalEmptyStackError
 	^ self error: OOStack stackEmptyErrorDescription.! !
 
@@ -241,94 +209,39 @@ with: aTopObject onTopOf: aBottomStack
 	^ newStack.! !
 
 
-!classDefinition: #Stack category: #'Stack-Exercise'!
-Object subclass: #Stack
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Stack-Exercise'!
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:19'!
-isEmpty
-	self subclassResponsibility! !
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:11'!
-pop
-	self subclassResponsibility! !
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:02'!
-push: anObjectToPush
-	self subclassResponsibility! !
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:14'!
-size
-	self subclassResponsibility! !
-
-!Stack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:31:08'!
-top
-	self subclassResponsibility! !
-
-
-!classDefinition: #MutableStack category: #'Stack-Exercise'!
-Stack subclass: #MutableStack
-	instanceVariableNames: 'internalImmutableStack'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Stack-Exercise'!
-
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
-initialize
-	internalImmutableStack _ EmptyImmutableStack new.! !
-
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
-isEmpty
-	^ internalImmutableStack isEmpty.! !
-
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
-pop
-	| topObject |
-	topObject _ internalImmutableStack top.
-	internalImmutableStack _ internalImmutableStack bottom.
-	^ topObject.! !
-
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
-push: anObjectToPush
-	internalImmutableStack _ internalImmutableStack push: anObjectToPush.! !
-
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
-size
-	^ internalImmutableStack size.! !
-
-!MutableStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 16:52:24'!
-top
-	^ internalImmutableStack top.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'MutableStack class' category: #'Stack-Exercise'!
-MutableStack class
-	instanceVariableNames: ''!
-
-!MutableStack class methodsFor: 'error descriptions' stamp: 'BAB 9/17/2017 10:55:14'!
-stackEmptyErrorDescription
-	
-	^ 'Stack is empty'! !
-
-
-!MutableStack class methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:56:32'!
-empty
-	| emptyStack |
-	emptyStack := self new.
-	emptyStack initialize.
-	^ emptyStack! !
-
-
 !classDefinition: #OOStack category: #'Stack-Exercise'!
 Stack subclass: #OOStack
-	instanceVariableNames: ''
+	instanceVariableNames: 'internalInmutableStack'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Stack-Exercise'!
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/18/2017 11:35:45'!
+initialize
+	internalInmutableStack _ EmptyImmutableStack new.! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:55:14'!
+isEmpty
+	^ internalInmutableStack isEmpty.! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:24:22'!
+pop
+	| topObject |
+	topObject := internalInmutableStack top.
+	internalInmutableStack := internalInmutableStack bottom.
+	^ topObject .! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:15:55'!
+push: anObjectToPush
+	internalInmutableStack := internalInmutableStack push: anObjectToPush .! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:19:49'!
+size
+	^ internalInmutableStack size.! !
+
+!OOStack methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 11:16:09'!
+top
+	^ internalInmutableStack top.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -336,15 +249,15 @@ Stack subclass: #OOStack
 OOStack class
 	instanceVariableNames: ''!
 
-!OOStack class methodsFor: 'error descriptions' stamp: 'HernanWilkinson 5/7/2012 11:51'!
+!OOStack class methodsFor: 'error descriptions' stamp: 'BAB 9/17/2017 10:55:14'!
 stackEmptyErrorDescription
 	
 	^ 'Stack is empty'! !
 
 
-!OOStack class methodsFor: 'as yet unclassified' stamp: 'BAB 9/17/2017 10:57:03'!
+!OOStack class methodsFor: 'as yet unclassified' stamp: 'BAB 9/22/2017 14:48:18'!
 new
 	| emptyStack |
-	emptyStack := MutableStack new.
+	emptyStack := super new.
 	emptyStack initialize.
 	^ emptyStack! !
