@@ -451,17 +451,14 @@ balance
 Portfolio class
 	instanceVariableNames: ''!
 
-!Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/23/2017 21:14:57'!
+!Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/24/2017 12:06:35'!
 failIfHasRepeatedAccount: aCollectionOfAccounts
-	| portfolios receptiveAccounts |
-	portfolios := aCollectionOfAccounts select: [ :account | self = account class].
-	receptiveAccounts := aCollectionOfAccounts select: [ :account | (self = account class) not].
-	((Set newFrom: portfolios) size = portfolios size and: (Set newFrom: receptiveAccounts) size = receptiveAccounts size)
-		ifTrue: [ (receptiveAccounts inject: true into: [ :noRepeatedAccounts :receptiveAccount | 
-				noRepeatedAccounts and:
-					(portfolios detect: [ :portfolio | portfolio manages: receptiveAccount ] ifFound: [ :portfolio | false ] ifNone: [ true ])] )
-				ifFalse: [ ^ Error signal: self accountAlreadyManagedErrorMessage ]]
-		ifFalse: [ ^ Error signal: self accountAlreadyManagedErrorMessage ]! !
+	((Set newFrom: aCollectionOfAccounts) size = aCollectionOfAccounts size and: 
+		(aCollectionOfAccounts detect: [ :account | 
+			aCollectionOfAccounts detect: [ :anotherAccount |
+				(anotherAccount = account) not and: (account manages: anotherAccount)]
+				ifFound: [ :repeatedAccount | true] ifNone: [ false]]
+			ifFound: [ :repeatedAccount | false] ifNone: [ true])) ifFalse: [ Error signal: self accountAlreadyManagedErrorMessage]! !
 
 !Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/23/2017 19:50:51'!
 with: anAccount1 with: anAccount2
