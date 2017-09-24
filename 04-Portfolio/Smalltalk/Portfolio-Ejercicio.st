@@ -389,8 +389,8 @@ registers: aTransaction
 	self subclassResponsibility ! !
 
 
-!SummarizingAccount methodsFor: 'transactions' stamp: 'BAB 9/24/2017 13:46:03'!
-intersectsWith
+!SummarizingAccount methodsFor: 'transactions' stamp: 'BAB 9/24/2017 13:50:37'!
+intersectsWith: anAccountsCollection
 
 	self subclassResponsibility ! !
 
