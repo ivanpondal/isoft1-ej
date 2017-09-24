@@ -414,10 +414,11 @@ manages: anAccount
 
 ! !
 
-!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 14:32:03'!
+!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:38:14'!
 registers: aTransaction
 
-	^ accounts detect: [ :account | account registers: aTransaction] ifFound: [ :account | true ] ifNone: [ false ]! !
+	accounts detect: [ :account | account registers: aTransaction] ifNone: [ ^ false ].
+	^ true.! !
 
 
 !Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 18:08:31'!
@@ -425,18 +426,15 @@ transactions
 
 	^ accounts inject: OrderedCollection new into: [ :transactions :account | transactions addAll: account transactions. transactions ]! !
 
-!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:33:57'!
+!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:46:08'!
 transactionsOf: anAccount
 	| managedAccount |
-	(self manages: anAccount) ifFalse: [ ^ Error signal: self class accountNotManagedMessageDescription ].
+	(self manages: anAccount) ifFalse: [ ^Error signal: self class accountNotManagedMessageDescription].
 
-	managedAccount := accounts detect: [ :account |
-		(self isKindOf: account class) ifTrue: [ account manages: anAccount ] ifFalse: [ account = anAccount ] ].
-		
-	^ ((self isKindOf: managedAccount class) and: (managedAccount = anAccount) not)
-			ifTrue: [ managedAccount transactionsOf: anAccount ]
-			ifFalse: [ managedAccount transactions ]
-! !
+	managedAccount := accounts detect: [ :account | account manages: anAccount].
+	^((self isKindOf: managedAccount class) and: (managedAccount = anAccount) not)
+			ifTrue: [ managedAccount transactionsOf: anAccount]
+			ifFalse: [ managedAccount transactions]! !
 
 
 !Portfolio methodsFor: 'initialization' stamp: 'HW 9/23/2017 14:13:27'!
