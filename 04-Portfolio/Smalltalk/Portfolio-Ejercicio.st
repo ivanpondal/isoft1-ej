@@ -408,42 +408,41 @@ SummarizingAccount subclass: #Portfolio
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:33:20'!
+!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:57:34'!
 manages: anAccount
-		^ self = anAccount or: (accounts detect: [ :account | account manages: anAccount ] ifFound: [ :account | true ] ifNone: [ false ])
+
+		^ self = anAccount or: (accounts detect: [ :account | account manages: anAccount] ifFound: [ :account | true] ifNone: [ false])
 
 ! !
 
-!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:38:14'!
+!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:48:30'!
 registers: aTransaction
 
-	accounts detect: [ :account | account registers: aTransaction] ifNone: [ ^ false ].
+	accounts detect: [ :account | account registers: aTransaction] ifNone: [ ^ false].
 	^ true.! !
 
 
-!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 18:08:31'!
+!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:49:23'!
 transactions 
 
-	^ accounts inject: OrderedCollection new into: [ :transactions :account | transactions addAll: account transactions. transactions ]! !
+	^ accounts inject: OrderedCollection new into: [ :transactions :account | transactions addAll: account transactions. transactions]! !
 
-!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:46:08'!
+!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:57:21'!
 transactionsOf: anAccount
-	| managedAccount |
+
 	(self manages: anAccount) ifFalse: [ ^Error signal: self class accountNotManagedMessageDescription].
-
-	managedAccount := accounts detect: [ :account | account manages: anAccount].
-	^((self isKindOf: managedAccount class) and: (managedAccount = anAccount) not)
-			ifTrue: [ managedAccount transactionsOf: anAccount]
-			ifFalse: [ managedAccount transactions]! !
+	^ anAccount transactions.! !
 
 
-!Portfolio methodsFor: 'initialization' stamp: 'HW 9/23/2017 14:13:27'!
+!Portfolio methodsFor: 'initialization' stamp: 'HW 9/23/2017 21:57:53'!
 initializeWith: anAccountsSet
+
 	accounts := anAccountsSet! !
 
 
-!Portfolio methodsFor: 'balance' stamp: 'HW 9/23/2017 13:56:35'!
+!Portfolio methodsFor: 'balance' stamp: 'HW 9/23/2017 21:57:46'!
 balance
+
 	^ accounts inject: 0 into: [ :balance :account | balance + account balance]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
