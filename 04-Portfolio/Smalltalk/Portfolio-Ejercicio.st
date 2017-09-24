@@ -408,10 +408,9 @@ SummarizingAccount subclass: #Portfolio
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 16:34:43'!
+!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:33:20'!
 manages: anAccount
-
-		^ accounts detect: [ :account | account = anAccount or: (account manages: anAccount) ] ifFound: [ :account | true ] ifNone: [ false ]
+		^ self = anAccount or: (accounts detect: [ :account | account manages: anAccount ] ifFound: [ :account | true ] ifNone: [ false ])
 
 ! !
 
@@ -426,13 +425,13 @@ transactions
 
 	^ accounts inject: OrderedCollection new into: [ :transactions :account | transactions addAll: account transactions. transactions ]! !
 
-!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 19:31:01'!
+!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:33:57'!
 transactionsOf: anAccount
 	| managedAccount |
 	(self manages: anAccount) ifFalse: [ ^ Error signal: self class accountNotManagedMessageDescription ].
 
 	managedAccount := accounts detect: [ :account |
-		(self isKindOf: account class) ifTrue: [ account = anAccount or: (account manages: anAccount)] ifFalse: [ account = anAccount ]].
+		(self isKindOf: account class) ifTrue: [ account manages: anAccount ] ifFalse: [ account = anAccount ] ].
 		
 	^ ((self isKindOf: managedAccount class) and: (managedAccount = anAccount) not)
 			ifTrue: [ managedAccount transactionsOf: anAccount ]
