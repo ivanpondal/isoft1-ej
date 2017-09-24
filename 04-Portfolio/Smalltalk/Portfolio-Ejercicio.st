@@ -403,44 +403,51 @@ balance
 
 !classDefinition: #Portfolio category: #'Portfolio-Ejercicio'!
 SummarizingAccount subclass: #Portfolio
-	instanceVariableNames: 'managed'
+	instanceVariableNames: 'accounts'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'balance' stamp: 'BAB 9/21/2017 14:25:52'!
-balance
-
-	^ managed inject: 0 into: [:manages :aManaged | manages + (aManaged balance)  ]
- ! !
-
-
-!Portfolio methodsFor: 'testing' stamp: 'BAB 9/21/2017 14:16:42'!
+!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 16:34:43'!
 manages: anAccount
 
-		^ managed inject: false into: [:manages :aManaged | manages or: [aManaged manages: anAccount] ]
+		^ accounts detect: [ :account | account = anAccount or: (account manages: anAccount) ] ifFound: [ :account | true ] ifNone: [ false ]
+
 ! !
 
-!Portfolio methodsFor: 'testing' stamp: 'BAB 9/21/2017 14:35:34'!
+!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 14:32:03'!
 registers: aTransaction
 
-	^ managed inject: false into: [:manages :aManaged | manages or: [aManaged registers: aTransaction] ].
- ! !
+	^ accounts detect: [ :account | account registers: aTransaction] ifFound: [ :account | true ] ifNone: [ false ]! !
 
 
-!Portfolio methodsFor: 'transactions' stamp: 'BAB 9/21/2017 14:18:57'!
-initializeWith: aManagedCollection 
-	managed := aManagedCollection ! !
-
-!Portfolio methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:39'!
+!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 18:08:31'!
 transactions 
 
-	self shouldBeImplemented ! !
+	^ accounts inject: OrderedCollection new into: [ :transactions :account | transactions addAll: account transactions. transactions ]! !
 
-!Portfolio methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:40'!
-transactionsOf: anAccount 
+!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 19:31:01'!
+transactionsOf: anAccount
+	| managedAccount |
+	(self manages: anAccount) ifFalse: [ ^ Error signal: self class accountNotManagedMessageDescription ].
 
-	self shouldBeImplemented ! !
+	managedAccount := accounts detect: [ :account |
+		(self isKindOf: account class) ifTrue: [ account = anAccount or: (account manages: anAccount)] ifFalse: [ account = anAccount ]].
+		
+	^ ((self isKindOf: managedAccount class) and: (managedAccount = anAccount) not)
+			ifTrue: [ managedAccount transactionsOf: anAccount ]
+			ifFalse: [ managedAccount transactions ]
+! !
+
+
+!Portfolio methodsFor: 'initialization' stamp: 'HW 9/23/2017 14:13:27'!
+initializeWith: anAccountsSet
+	accounts := anAccountsSet! !
+
+
+!Portfolio methodsFor: 'balance' stamp: 'HW 9/23/2017 13:56:35'!
+balance
+	^ accounts inject: 0 into: [ :balance :account | balance + account balance]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -448,18 +455,37 @@ transactionsOf: anAccount
 Portfolio class
 	instanceVariableNames: ''!
 
-!Portfolio class methodsFor: 'instance creation' stamp: 'BAB 9/21/2017 14:29:28'!
+!Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/23/2017 21:14:57'!
+failIfHasRepeatedAccount: aCollectionOfAccounts
+	| portfolios receptiveAccounts |
+	portfolios := aCollectionOfAccounts select: [ :account | self = account class].
+	receptiveAccounts := aCollectionOfAccounts select: [ :account | (self = account class) not].
+	((Set newFrom: portfolios) size = portfolios size and: (Set newFrom: receptiveAccounts) size = receptiveAccounts size)
+		ifTrue: [ (receptiveAccounts inject: true into: [ :noRepeatedAccounts :receptiveAccount | 
+				noRepeatedAccounts and:
+					(portfolios detect: [ :portfolio | portfolio manages: receptiveAccount ] ifFound: [ :portfolio | false ] ifNone: [ true ])] )
+				ifFalse: [ ^ Error signal: self accountAlreadyManagedErrorMessage ]]
+		ifFalse: [ ^ Error signal: self accountAlreadyManagedErrorMessage ]! !
+
+!Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/23/2017 19:50:51'!
 with: anAccount1 with: anAccount2
 
-	^ self withAll: (Array with: anAccount1 with: anAccount2).! !
+	^self withAll: (Array with: anAccount1 with: anAccount2)! !
 
-!Portfolio class methodsFor: 'instance creation' stamp: 'BAB 9/21/2017 14:26:46'!
+!Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/23/2017 19:51:36'!
 withAll: aCollectionOfAccounts
+	self failIfHasRepeatedAccount: aCollectionOfAccounts.
+	^self new initializeWith: (Set newFrom: aCollectionOfAccounts)! !
 
-	| aPortfolio |
-	aPortfolio := self new. 
-	aPortfolio initializeWith: aCollectionOfAccounts.
-	^ aPortfolio ! !
+
+
+!Portfolio class methodsFor: 'error handling' stamp: 'HW 9/23/2017 19:53:04'!
+accountAlreadyManagedErrorMessage
+	^ 'La cuenta ya se encuentra administrada por este Portfolio'! !
+
+!Portfolio class methodsFor: 'error handling' stamp: 'HW 9/23/2017 19:26:54'!
+accountNotManagedMessageDescription
+	^ 'La cuenta seleccionada no es administrada por este Portfolio'! !
 
 
 !classDefinition: #ReceptiveAccount category: #'Portfolio-Ejercicio'!
@@ -501,8 +527,8 @@ manages: anAccount
 	^ self = anAccount 
 ! !
 
-!ReceptiveAccount methodsFor: 'testing' stamp: 'HernanWilkinson 7/13/2011 18:37'!
-registers: aTtransaction
+!ReceptiveAccount methodsFor: 'testing' stamp: 'HW 9/23/2017 14:26:55'!
+registers: aTransaction
 
-	^ transactions includes: aTtransaction 
+	^ transactions includes: aTransaction 
 ! !
