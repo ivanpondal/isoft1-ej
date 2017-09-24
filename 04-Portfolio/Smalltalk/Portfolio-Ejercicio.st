@@ -281,6 +281,23 @@ test20CanNotCreatePortfoliosWithAccountsManagedByOtherManagedPortfolio
 		withExceptionDo: [ :invalidPortfolio |
 			self assert: Portfolio accountAlreadyManagedErrorMessage = invalidPortfolio messageText ]! !
 
+!PortfolioTest methodsFor: 'tests' stamp: 'HW 9/24/2017 14:08:18'!
+test21CanNotCreatePortfoliosWithPortfoliosSharingAccounts 
+
+	| account1 account2 account3 composedPortfolio1 composedPortfolio2 |
+	
+	account1 := ReceptiveAccount new.
+	account2 := ReceptiveAccount new.
+	account3 := ReceptiveAccount new.
+	composedPortfolio1 := Portfolio with: account1 with: account2.
+	composedPortfolio2 := Portfolio with: account1 with: account3.
+
+	self 
+		should: [ Portfolio with: composedPortfolio1 with: composedPortfolio2 ]
+		raise: Error
+		withExceptionDo: [ :invalidPortfolio |
+			self assert: Portfolio accountAlreadyManagedErrorMessage = invalidPortfolio messageText ]! !
+
 
 !classDefinition: #AccountTransaction category: #'Portfolio-Ejercicio'!
 Object subclass: #AccountTransaction
@@ -378,6 +395,10 @@ Object subclass: #SummarizingAccount
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
+!SummarizingAccount methodsFor: 'testing' stamp: 'HW 9/24/2017 16:11:31'!
+isIndependentOf: anAccountsCollection
+	self subclassResponsibility.! !
+
 !SummarizingAccount methodsFor: 'testing' stamp: 'HernanWilkinson 7/13/2011 18:34'!
 manages: anAccount
 
@@ -388,11 +409,6 @@ registers: aTransaction
 
 	self subclassResponsibility ! !
 
-
-!SummarizingAccount methodsFor: 'transactions' stamp: 'BAB 9/24/2017 13:50:37'!
-intersectsWith: anAccountsCollection
-
-	self subclassResponsibility ! !
 
 !SummarizingAccount methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:35'!
 transactions
@@ -413,11 +429,14 @@ SummarizingAccount subclass: #Portfolio
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'balance' stamp: 'HW 9/23/2017 21:57:46'!
-balance
-
-	^ accounts inject: 0 into: [ :balance :account | balance + account balance]! !
-
+!Portfolio methodsFor: 'testing' stamp: 'HW 9/24/2017 16:17:32'!
+isIndependentOf: anAccountsCollection
+	anAccountsCollection
+		detect: [ :anAccount |
+			(anAccount isIndependentOf: accounts) not ]
+		ifFound: [ :anAccount |
+			^ false ]
+		ifNone: [ ^ true ].! !
 
 !Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:57:34'!
 manages: anAccount
@@ -450,10 +469,11 @@ initializeWith: anAccountsSet
 
 	accounts := anAccountsSet! !
 
-!Portfolio methodsFor: 'initialization' stamp: 'BAB 9/24/2017 13:45:41'!
-intersectsWith: anAccountsCollection
-	anAccountsCollection detect: [:anAccount | anAccount intersectsWith: accounts] ifFound: [:anAccount | ^ true] ifNone: [^ false].
-! !
+
+!Portfolio methodsFor: 'balance' stamp: 'HW 9/23/2017 21:57:46'!
+balance
+
+	^ accounts inject: 0 into: [ :balance :account | balance + account balance]! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -461,16 +481,19 @@ intersectsWith: anAccountsCollection
 Portfolio class
 	instanceVariableNames: ''!
 
-!Portfolio class methodsFor: 'instance creation' stamp: 'BAB 9/24/2017 13:12:47'!
+!Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/24/2017 16:15:06'!
 failIfHasRepeatedAccount: aCollectionOfAccounts
 	| aSetOfAccounts |
-	aSetOfAccounts := (Set newFrom: aCollectionOfAccounts).
-	( aSetOfAccounts size = aCollectionOfAccounts size) ifFalse: [^ self signalAccountAlreadyManaged].
-	aCollectionOfAccounts detect: [:anAccount | | otherAccountsSet | 
-		otherAccountsSet := aSetOfAccounts copy.
-		otherAccountsSet remove: anAccount. 
-		anAccount intersectsWith: otherAccountsSet] ifFound: [ :anAccount | self signalAccountAlreadyManaged] ifNone: [ ].
-	! !
+	aSetOfAccounts _ Set newFrom: aCollectionOfAccounts.
+	aSetOfAccounts size = aCollectionOfAccounts size ifFalse: [ ^ self signalAccountAlreadyManaged ].
+	aCollectionOfAccounts
+		detect: [ :anAccount | | otherAccountsSet |
+			otherAccountsSet _ aSetOfAccounts copy.
+			otherAccountsSet remove: anAccount.
+			(anAccount isIndependentOf: otherAccountsSet) not]
+		ifFound: [ :anAccount |
+			self signalAccountAlreadyManaged ]
+		ifNone: [ ].! !
 
 !Portfolio class methodsFor: 'instance creation' stamp: 'BAB 9/24/2017 12:42:19'!
 signalAccountAlreadyManaged
@@ -485,6 +508,7 @@ with: anAccount1 with: anAccount2
 withAll: aCollectionOfAccounts
 	self failIfHasRepeatedAccount: aCollectionOfAccounts.
 	^self new initializeWith: (Set newFrom: aCollectionOfAccounts)! !
+
 
 
 !Portfolio class methodsFor: 'error handling' stamp: 'HW 9/23/2017 19:53:04'!
@@ -529,10 +553,14 @@ balance
 ! !
 
 
-!ReceptiveAccount methodsFor: 'testing' stamp: 'BAB 9/24/2017 13:45:50'!
-intersectsWith: aCollectionOfAccounts
-	aCollectionOfAccounts detect: [:anAccount | anAccount manages: self] ifFound: [:anAccount | ^true] ifNone: [^false].
-! !
+!ReceptiveAccount methodsFor: 'testing' stamp: 'HW 9/24/2017 16:14:26'!
+isIndependentOf: anAccountsCollection
+	anAccountsCollection
+		detect: [ :anAccount |
+			anAccount manages: self ]
+		ifFound: [ :anAccount |
+			^ false ]
+		ifNone: [ ^ true ].! !
 
 !ReceptiveAccount methodsFor: 'testing' stamp: 'HernanWilkinson 7/13/2011 18:37'!
 manages: anAccount
