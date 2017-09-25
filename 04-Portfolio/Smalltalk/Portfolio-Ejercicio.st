@@ -410,6 +410,11 @@ registers: aTransaction
 	self subclassResponsibility ! !
 
 
+!SummarizingAccount methodsFor: 'transactions' stamp: 'BAB 9/24/2017 13:50:37'!
+intersectsWith: anAccountsCollection
+
+	self subclassResponsibility ! !
+
 !SummarizingAccount methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:35'!
 transactions
 
@@ -429,33 +434,32 @@ SummarizingAccount subclass: #Portfolio
 	poolDictionaries: ''
 	category: 'Portfolio-Ejercicio'!
 
-!Portfolio methodsFor: 'testing' stamp: 'HW 9/24/2017 16:17:32'!
-isIndependentOf: anAccountsCollection
-	anAccountsCollection
-		detect: [ :anAccount |
-			(anAccount isIndependentOf: accounts) not ]
-		ifFound: [ :anAccount |
-			^ false ]
-		ifNone: [ ^ true ].! !
+!Portfolio methodsFor: 'balance' stamp: 'HW 9/23/2017 21:57:46'!
+balance
 
-!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:57:34'!
+	^ accounts inject: 0 into: [ :balance :account | balance + account balance]! !
+
+
+!Portfolio methodsFor: 'testing' stamp: 'BAB 9/25/2017 00:25:13'!
+isIndependentOf: anAccountsCollection
+	^ anAccountsCollection allSatisfy: [ :anAccount |
+			(anAccount isIndependentOf: accounts) ].! !
+
+!Portfolio methodsFor: 'testing' stamp: 'BAB 9/25/2017 00:28:20'!
 manages: anAccount
 
-		^ self = anAccount or: (accounts detect: [ :account | account manages: anAccount] ifFound: [ :account | true] ifNone: [ false])
+		^ self = anAccount or: [accounts anySatisfy: [ :account | account manages: anAccount] ].! !
 
-! !
-
-!Portfolio methodsFor: 'testing' stamp: 'HW 9/23/2017 21:48:30'!
+!Portfolio methodsFor: 'testing' stamp: 'BAB 9/25/2017 00:29:04'!
 registers: aTransaction
 
-	accounts detect: [ :account | account registers: aTransaction] ifNone: [ ^ false].
-	^ true.! !
+	^ accounts anySatisfy: [ :account | account registers: aTransaction].! !
 
 
-!Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:49:23'!
+!Portfolio methodsFor: 'transactions' stamp: 'BAB 9/25/2017 00:29:26'!
 transactions 
 
-	^ accounts inject: OrderedCollection new into: [ :transactions :account | transactions addAll: account transactions. transactions]! !
+	^ accounts inject: OrderedCollection new into: [ :transactions :account | transactions union: account transactions]! !
 
 !Portfolio methodsFor: 'transactions' stamp: 'HW 9/23/2017 21:57:21'!
 transactionsOf: anAccount
@@ -469,31 +473,23 @@ initializeWith: anAccountsSet
 
 	accounts := anAccountsSet! !
 
-
-!Portfolio methodsFor: 'balance' stamp: 'HW 9/23/2017 21:57:46'!
-balance
-
-	^ accounts inject: 0 into: [ :balance :account | balance + account balance]! !
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Portfolio class' category: #'Portfolio-Ejercicio'!
 Portfolio class
 	instanceVariableNames: ''!
 
-!Portfolio class methodsFor: 'instance creation' stamp: 'HW 9/24/2017 16:15:06'!
+!Portfolio class methodsFor: 'instance creation' stamp: 'BAB 9/25/2017 00:33:33'!
 failIfHasRepeatedAccount: aCollectionOfAccounts
 	| aSetOfAccounts |
 	aSetOfAccounts _ Set newFrom: aCollectionOfAccounts.
 	aSetOfAccounts size = aCollectionOfAccounts size ifFalse: [ ^ self signalAccountAlreadyManaged ].
-	aCollectionOfAccounts
-		detect: [ :anAccount | | otherAccountsSet |
+	(aCollectionOfAccounts
+		allSatisfy: [ :anAccount | | otherAccountsSet |
 			otherAccountsSet _ aSetOfAccounts copy.
 			otherAccountsSet remove: anAccount.
-			(anAccount isIndependentOf: otherAccountsSet) not]
-		ifFound: [ :anAccount |
-			self signalAccountAlreadyManaged ]
-		ifNone: [ ].! !
+			(anAccount isIndependentOf: otherAccountsSet)]) ifFalse:
+		[self signalAccountAlreadyManaged ].! !
 
 !Portfolio class methodsFor: 'instance creation' stamp: 'BAB 9/24/2017 12:42:19'!
 signalAccountAlreadyManaged
@@ -508,7 +504,6 @@ with: anAccount1 with: anAccount2
 withAll: aCollectionOfAccounts
 	self failIfHasRepeatedAccount: aCollectionOfAccounts.
 	^self new initializeWith: (Set newFrom: aCollectionOfAccounts)! !
-
 
 
 !Portfolio class methodsFor: 'error handling' stamp: 'HW 9/23/2017 19:53:04'!
@@ -553,14 +548,10 @@ balance
 ! !
 
 
-!ReceptiveAccount methodsFor: 'testing' stamp: 'HW 9/24/2017 16:14:26'!
+!ReceptiveAccount methodsFor: 'testing' stamp: 'BAB 9/25/2017 00:26:55'!
 isIndependentOf: anAccountsCollection
-	anAccountsCollection
-		detect: [ :anAccount |
-			anAccount manages: self ]
-		ifFound: [ :anAccount |
-			^ false ]
-		ifNone: [ ^ true ].! !
+	^ anAccountsCollection noneSatisfy: [ :anAccount |
+			anAccount manages: self ].! !
 
 !ReceptiveAccount methodsFor: 'testing' stamp: 'HernanWilkinson 7/13/2011 18:37'!
 manages: anAccount
