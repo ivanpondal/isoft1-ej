@@ -458,10 +458,10 @@ test29ReversePortfolioTreePrinterPrintsTheCompositeStartingFromTheLeaves
 	! !
 
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
+!PortfolioTest methodsFor: 'test support' stamp: 'asdf 9/25/2017 21:10:49'!
 accountSummaryLinesOf: aReceptiveAccount 
 	
-	self shouldBeImplemented ! !
+	^ aReceptiveAccount transactions collect: [ :transaction | transaction description ]! !
 
 !PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
 accountTransferNetOf: aReceptiveAccount 
@@ -496,11 +496,20 @@ Object subclass: #AccountTransaction
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
+!AccountTransaction methodsFor: 'evaluating' stamp: 'negated 9/25/2017 20:48:39'!
+applyTo: aBalance
+
+	self subclassResponsibility! !
 
 !AccountTransaction methodsFor: 'evaluating' stamp: 'HernanWilkinson 7/14/2011 06:48'!
 value
 
 	self subclassResponsibility ! !
+
+
+!AccountTransaction methodsFor: 'printing' stamp: 'asdf 9/25/2017 21:18:51'!
+description
+	self subclassResponsibility.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -546,6 +555,15 @@ value
 	^ value! !
 
 
+!Deposit methodsFor: 'as yet unclassified' stamp: 'negated 9/25/2017 20:50:08'!
+applyTo: aBalance
+	^ aBalance + value.! !
+
+
+!Deposit methodsFor: 'printing' stamp: 'asdf 9/25/2017 21:22:28'!
+description
+	^ 'Deposito por ' append: self value asString.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Deposit class' category: #'PortfolioTreePrinter-Ejercicio'!
@@ -568,6 +586,25 @@ register: aValue on: account
 	^ withdraw! !
 
 
+!classDefinition: #Transfer category: #'PortfolioTreePrinter-Ejercicio'!
+AccountTransaction subclass: #Transfer
+	instanceVariableNames: 'value sourceAccount targetAccount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Transfer class' category: #'PortfolioTreePrinter-Ejercicio'!
+Transfer class
+	instanceVariableNames: ''!
+
+!Transfer class methodsFor: 'initialization' stamp: 'asdf 9/25/2017 21:36:16'!
+register: anAmount from: aSourceAccount to: aTargetAccount
+	Withdraw register: anAmount on: aSourceAccount.
+	Deposit register:  anAmount on: aTargetAccount.! !
+
+
 !classDefinition: #Withdraw category: #'PortfolioTreePrinter-Ejercicio'!
 AccountTransaction subclass: #Withdraw
 	instanceVariableNames: 'value'
@@ -575,10 +612,10 @@ AccountTransaction subclass: #Withdraw
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!Withdraw methodsFor: 'initialization' stamp: 'HernanWilkinson 7/13/2011 18:46'!
+!Withdraw methodsFor: 'initialization' stamp: 'negated 9/25/2017 20:39:59'!
 initializeFor: aValue
 
-	value := aValue ! !
+	value := aValue! !
 
 
 !Withdraw methodsFor: 'value' stamp: 'HernanWilkinson 7/14/2011 05:54'!
@@ -586,6 +623,15 @@ value
 
 	^ value ! !
 
+
+!Withdraw methodsFor: 'as yet unclassified' stamp: 'negated 9/25/2017 20:50:47'!
+applyTo: aBalance 
+	^ aBalance - value! !
+
+
+!Withdraw methodsFor: 'printing' stamp: 'asdf 9/25/2017 21:22:44'!
+description
+	^ 'Extraccion por ' append: self value asString.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -637,7 +683,6 @@ transactions
 
 	self subclassResponsibility ! !
 
-
 
 !classDefinition: #Portfolio category: #'PortfolioTreePrinter-Ejercicio'!
 SummarizingAccount subclass: #Portfolio
@@ -645,7 +690,6 @@ SummarizingAccount subclass: #Portfolio
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
-
 
 !Portfolio methodsFor: 'testing' stamp: 'HernanWilkinson 7/13/2011 19:22'!
 manages: anAccount
@@ -760,10 +804,10 @@ initialize
 	transactions := OrderedCollection new.! !
 
 
-!ReceptiveAccount methodsFor: 'transactions' stamp: 'HAW 9/25/2017 17:06:14'!
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'negated 9/25/2017 20:49:12'!
 balance
 
-	^ transactions inject: 0 into: [ :balance :transaction | balance + transaction value ]! !
+	^ transactions inject: 0 into: [ :balance :transaction | transaction applyTo: balance]! !
 
 !ReceptiveAccount methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:37'!
 register: aTransaction
@@ -777,7 +821,6 @@ transactions
 	^ transactions copy! !
 
 
-
 !ReceptiveAccount methodsFor: 'testing' stamp: 'HernanWilkinson 7/13/2011 18:37'!
 manages: anAccount
 
@@ -789,11 +832,3 @@ registers: aTtransaction
 
 	^ transactions includes: aTtransaction 
 ! !
-
-
-!classDefinition: #Transfer category: #'PortfolioTreePrinter-Ejercicio'!
-Object subclass: #Transfer
-	instanceVariableNames: 'value sourceAccount targetAccount'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'PortfolioTreePrinter-Ejercicio'!
