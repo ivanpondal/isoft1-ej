@@ -511,10 +511,6 @@ Object subclass: #AccountTransaction
 accept: anAccountTransactionVisitor
 	self subclassResponsibility.! !
 
-!AccountTransaction methodsFor: 'evaluating' stamp: 'BAB 9/26/2017 23:23:01'!
-affectBalance: aBalance
-	self subclassResponsibility.! !
-
 !AccountTransaction methodsFor: 'evaluating' stamp: 'HernanWilkinson 7/14/2011 06:48'!
 value
 
@@ -549,10 +545,6 @@ AccountTransaction subclass: #CertificateOfDepositInvestment
 initializeFor: aCertificateOfDeposit 
 	certificateOfDeposit := aCertificateOfDeposit! !
 
-
-!CertificateOfDepositInvestment methodsFor: 'as yet unclassified' stamp: 'HW 9/27/2017 23:19:44'!
-affectBalance: aBalance 
-	^ aBalance - certificateOfDeposit amount! !
 
 
 !CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/28/2017 01:00:28'!
@@ -615,10 +607,6 @@ value
 	^ value! !
 
 
-!Deposit methodsFor: 'as yet unclassified' stamp: 'BAB 9/26/2017 23:23:01'!
-affectBalance: aBalance
-	^ aBalance + value.! !
-
 
 !Deposit methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:47:46'!
 accept: anAccountTransactionVisitor 
@@ -665,10 +653,6 @@ value
 	^ transfer amount! !
 
 
-!TransferDeposit methodsFor: 'as yet unclassified' stamp: 'BAB 9/26/2017 23:23:01'!
-affectBalance: aBalance
-	^ aBalance + self value.! !
-
 
 !TransferDeposit methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:47:58'!
 accept: anAccountTransactionVisitor
@@ -710,10 +694,6 @@ value
 	^ transfer amount ! !
 
 
-!TransferWithdraw methodsFor: 'as yet unclassified' stamp: 'BAB 9/26/2017 23:23:01'!
-affectBalance: aBalance
-	^ aBalance - self value.! !
-
 
 !TransferWithdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:48:04'!
 accept: anAccountTransactionVisitor 
@@ -754,10 +734,6 @@ value
 
 	^ value ! !
 
-
-!Withdraw methodsFor: 'as yet unclassified' stamp: 'BAB 9/26/2017 23:23:01'!
-affectBalance: aBalance
-	^ aBalance - value.! !
 
 
 !Withdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:48:11'!
@@ -814,6 +790,44 @@ visitWithdraw: aWithdraw
 	self subclassResponsibility ! !
 
 
+!classDefinition: #BalanceVisitor category: #'PortfolioTreePrinter-Ejercicio'!
+AccountTransactionVisitor subclass: #BalanceVisitor
+	instanceVariableNames: 'balance'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!BalanceVisitor methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 01:30:03'!
+initialize
+	balance := 0.! !
+
+
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:35:19'!
+visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
+	balance := balance - aCertificateOfDepositInvestment amount.
+	^ balance.! !
+
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:35:59'!
+visitDeposit: aDeposit 
+	balance := balance + aDeposit value.
+	^ balance.! !
+
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:36:23'!
+visitTransferDeposit: aTransferDeposit 
+	balance := balance + aTransferDeposit value.
+	^ balance.! !
+
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:36:35'!
+visitTransferWithdraw: aTransferWithdraw 
+	balance := balance - aTransferWithdraw value.
+	^ balance.! !
+
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:36:48'!
+visitWithdraw: aWithdraw 
+	balance := balance - aWithdraw value.
+	^ balance.! !
+
+
 !classDefinition: #InvestmentEarningsVisitor category: #'PortfolioTreePrinter-Ejercicio'!
 AccountTransactionVisitor subclass: #InvestmentEarningsVisitor
 	instanceVariableNames: 'investmentEarnings'
@@ -821,12 +835,10 @@ AccountTransactionVisitor subclass: #InvestmentEarningsVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:12:50'!
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:37:17'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	| investmentEarningsPlusInterestPayment |
-	investmentEarningsPlusInterestPayment := investmentEarnings + aCertificateOfDepositInvestment interestPayment.
-	investmentEarnings  := investmentEarningsPlusInterestPayment.
-	^ investmentEarningsPlusInterestPayment.! !
+	investmentEarnings := investmentEarnings + aCertificateOfDepositInvestment interestPayment.
+	^ investmentEarnings.! !
 
 
 !InvestmentEarningsVisitor methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 01:13:56'!
@@ -841,6 +853,11 @@ AccountTransactionVisitor subclass: #NetInvestmentVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:37:49'!
+visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
+	netInvestment  := netInvestment  + aCertificateOfDepositInvestment amount.
+	^ netInvestment.! !
+
 !NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:18:18'!
 visitDeposit: aDeposit 
 	^ netInvestment.! !
@@ -852,14 +869,6 @@ visitTransferWithdraw: aTransferWithdraw
 !NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:18:37'!
 visitWithdraw: aWithdraw 
 	^ netInvestment.! !
-
-
-!NetInvestmentVisitor methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 01:20:55'!
-visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	| netInvestmentPlusCertificateOfDepositInvestment |
-	netInvestmentPlusCertificateOfDepositInvestment  := netInvestment  + aCertificateOfDepositInvestment amount.
-	netInvestment := netInvestmentPlusCertificateOfDepositInvestment.
-	^ netInvestmentPlusCertificateOfDepositInvestment.! !
 
 
 !NetInvestmentVisitor methodsFor: 'initialization' stamp: 'HW 9/28/2017 01:21:29'!
@@ -882,19 +891,15 @@ visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment
 visitDeposit: aDeposit 
 	^ netTransfer.! !
 
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:53:56'!
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:38:37'!
 visitTransferDeposit: aTransferDeposit 
-	| netTransferPlusDeposit |
-	netTransferPlusDeposit := netTransfer + aTransferDeposit value.
-	netTransfer := netTransferPlusDeposit.
-	^ netTransferPlusDeposit.! !
+	netTransfer := netTransfer + aTransferDeposit value.
+	^ netTransfer.! !
 
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:54:52'!
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:38:53'!
 visitTransferWithdraw: aTransferWithdraw 
-	| netTransferMinusWithdraw |
-	netTransferMinusWithdraw := netTransfer - aTransferWithdraw value.
-	netTransfer := netTransferMinusWithdraw.
-	^ netTransferMinusWithdraw.! !
+	netTransfer := netTransfer - aTransferWithdraw value.
+	^ netTransfer.! !
 
 !NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:44:15'!
 visitWithdraw: aWithdraw
@@ -1156,12 +1161,14 @@ initialize
 	transactions := OrderedCollection new.! !
 
 
-!ReceptiveAccount methodsFor: 'transactions' stamp: 'BAB 9/26/2017 23:23:01'!
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'HW 9/28/2017 01:29:18'!
 balance
+	| balanceVisitor |
+	balanceVisitor := BalanceVisitor new.
 	^ transactions
 		inject: 0
 		into: [ :balance :transaction |
-			transaction affectBalance: balance ].! !
+			transaction accept: balanceVisitor ].! !
 
 !ReceptiveAccount methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:37'!
 register: aTransaction
