@@ -458,10 +458,12 @@ test29ReversePortfolioTreePrinterPrintsTheCompositeStartingFromTheLeaves
 	! !
 
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/27/2017 18:10:48'!
+!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/28/2017 00:14:36'!
 accountSummaryLinesOf: aReceptiveAccount
+	| summaryLinesVisitor |
+	summaryLinesVisitor := SummaryLinesVisitor new.
 	^ aReceptiveAccount transactions collect: [ :transaction |
-		transaction summaryLine ].! !
+		transaction accept: summaryLinesVisitor].! !
 
 !PortfolioTest methodsFor: 'test support' stamp: 'HW 9/27/2017 23:14:03'!
 accountTransferNetOf: aReceptiveAccount
@@ -500,6 +502,10 @@ Object subclass: #AccountTransaction
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
+!AccountTransaction methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:11:20'!
+accept: aVisitor
+	self subclassResponsibility.! !
+
 !AccountTransaction methodsFor: 'evaluating' stamp: 'BAB 9/26/2017 23:23:01'!
 affectBalance: aBalance
 	self subclassResponsibility.! !
@@ -509,10 +515,6 @@ value
 
 	self subclassResponsibility ! !
 
-
-!AccountTransaction methodsFor: 'printing' stamp: 'HW 9/27/2017 18:10:48'!
-summaryLine
-	self subclassResponsibility.! !
 
 
 !AccountTransaction methodsFor: 'as yet unclassified' stamp: 'HW 9/27/2017 23:22:07'!
@@ -564,11 +566,6 @@ affectInvestmentEarnings: anInvestmentEarning
 affectNetInvestment: aNetInvestment 
 	^ aNetInvestment  + certificateOfDeposit amount! !
 
-
-!CertificateOfDepositInvestment methodsFor: 'printing' stamp: 'HW 9/28/2017 00:02:16'!
-summaryLine
-	 ^ 'Plazo fijo por ', certificateOfDeposit amount printString ,' durante ',
-	certificateOfDeposit numberOfDays printString ,' dias a una tna de ', (certificateOfDeposit annualInterestRate * 100) printString ,'%'! !
 
 
 !CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/27/2017 23:56:31'!
@@ -623,9 +620,10 @@ affectNetTransfer: aTransferNet
 	^ aTransferNet.! !
 
 
-!Deposit methodsFor: 'printing' stamp: 'HW 9/27/2017 18:10:48'!
-summaryLine
-	^ 'Deposito por ' append: self value asString.! !
+
+!Deposit methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:17:01'!
+accept: aSummaryLinesVisitor 
+	^ aSummaryLinesVisitor visitDeposit: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -677,10 +675,6 @@ affectNetTransfer: aTransferNet
 	^ aTransferNet + self value.! !
 
 
-!TransferDeposit methodsFor: 'printing' stamp: 'HW 9/27/2017 18:10:48'!
-summaryLine
-	^ 'Transferencia por ' append: self value asString.! !
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'TransferDeposit class' category: #'PortfolioTreePrinter-Ejercicio'!
@@ -730,9 +724,10 @@ affectNetTransfer: aTransferNet
 	^ aTransferNet - self value.! !
 
 
-!TransferWithdraw methodsFor: 'printing' stamp: 'HW 9/27/2017 18:10:48'!
-summaryLine
-	^ 'Transferencia por -' append: self value asString.! !
+
+!TransferWithdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:19:51'!
+accept: aSummaryLinesVisitor 
+	^ aSummaryLinesVisitor visitTransferWithdraw: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -783,9 +778,10 @@ affectNetTransfer: aTransferNet
 	^ aTransferNet.! !
 
 
-!Withdraw methodsFor: 'printing' stamp: 'HW 9/27/2017 18:10:48'!
-summaryLine
-	^ 'Extraccion por ' append: self value asString.! !
+
+!Withdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:18:44'!
+accept: aSummaryLinesVisitor 
+	^ aSummaryLinesVisitor visitWithdraw: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -807,6 +803,54 @@ register: aValue on: account
 	account register: withdraw.
 		
 	^ withdraw! !
+
+
+!classDefinition: #AccountTransactionVisitor category: #'PortfolioTreePrinter-Ejercicio'!
+Object subclass: #AccountTransactionVisitor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:10:34'!
+visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment
+	self subclassResponsibility ! !
+
+!AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:08:29'!
+visitDeposit: aDeposit
+	self subclassResponsibility ! !
+
+!AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:09:54'!
+visitTransferDeposit: aTransferDeposit
+	self subclassResponsibility ! !
+
+!AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:10:07'!
+visitTransferWithdraw: aTransferWithdraw
+	self subclassResponsibility ! !
+
+!AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:09:18'!
+visitWithdraw: aWithdraw
+	self subclassResponsibility ! !
+
+
+!classDefinition: #SummaryLinesVisitor category: #'PortfolioTreePrinter-Ejercicio'!
+AccountTransactionVisitor subclass: #SummaryLinesVisitor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:17:53'!
+visitDeposit: aDeposit 
+	^ 'Deposito por ', aDeposit value asString.! !
+
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:20:31'!
+visitTransferWithdraw: aTransferWithdraw 
+	^ 'Transferencia por -', aTransferWithdraw value printString.! !
+
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:19:29'!
+visitWithdraw: aWithdraw 
+	^ 'Extraccion por ', aWithdraw value printString.! !
 
 
 !classDefinition: #CertificateOfDeposit category: #'PortfolioTreePrinter-Ejercicio'!
