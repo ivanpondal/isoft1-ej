@@ -458,36 +458,22 @@ test29ReversePortfolioTreePrinterPrintsTheCompositeStartingFromTheLeaves
 	! !
 
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/28/2017 00:14:36'!
+!PortfolioTest methodsFor: 'test support' stamp: 'BAB 9/28/2017 11:50:35'!
 accountSummaryLinesOf: aReceptiveAccount
-	| summaryLinesVisitor |
-	summaryLinesVisitor := SummaryLinesVisitor new.
-	^ aReceptiveAccount transactions collect: [ :transaction |
-		transaction accept: summaryLinesVisitor].! !
+	^ aReceptiveAccount summaryLines.! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/28/2017 00:27:13'!
+!PortfolioTest methodsFor: 'test support' stamp: 'BAB 9/28/2017 11:52:10'!
 accountTransferNetOf: aReceptiveAccount
-	| netTransferVisitor |
-	netTransferVisitor  := NetTransferVisitor new.
-	^ aReceptiveAccount transactions
-		inject: 0
-		into: [ :netTransfer :transaction | 
-			transaction accept: netTransferVisitor ].! !
+	^ aReceptiveAccount transferNet.! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/28/2017 01:07:17'!
+!PortfolioTest methodsFor: 'test support' stamp: 'BAB 9/28/2017 13:18:45'!
 investmentEarningsOf: aReceptiveAccount 
-	| investmentEarningsVisitor |
-	investmentEarningsVisitor := InvestmentEarningsVisitor new.
-	^ aReceptiveAccount transactions inject: 0 into: [:investmentEarnings :transaction | transaction accept: investmentEarningsVisitor ].! !
+	^ aReceptiveAccount investmentEarnings
+! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/28/2017 01:17:03'!
+!PortfolioTest methodsFor: 'test support' stamp: 'BAB 9/28/2017 13:22:52'!
 investmentNetOf: aReceptiveAccount
-	| netInvestmentVisitor |
-	netInvestmentVisitor := NetInvestmentVisitor new.
-	^ aReceptiveAccount transactions
-		inject: 0
-		into: [ :netInvestment :transaction |
-			transaction accept: netInvestmentVisitor ].! !
+	^ aReceptiveAccount investmentNet.! !
 
 !PortfolioTest methodsFor: 'test support' stamp: 'HernanWilkinson 9/6/2016 19:43'!
 portofolioTreeOf: aPortfolio namingAccountWith: aDictionary 
@@ -516,7 +502,6 @@ value
 
 	self subclassResponsibility ! !
 
-
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'AccountTransaction class' category: #'PortfolioTreePrinter-Ejercicio'!
@@ -544,7 +529,6 @@ AccountTransaction subclass: #CertificateOfDepositInvestment
 !CertificateOfDepositInvestment methodsFor: 'initialization' stamp: 'HW 9/27/2017 23:04:39'!
 initializeFor: aCertificateOfDeposit 
 	certificateOfDeposit := aCertificateOfDeposit! !
-
 
 
 !CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/28/2017 01:00:28'!
@@ -607,7 +591,6 @@ value
 	^ value! !
 
 
-
 !Deposit methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:47:46'!
 accept: anAccountTransactionVisitor 
 	^ anAccountTransactionVisitor visitDeposit: self.! !
@@ -654,6 +637,11 @@ value
 
 
 
+!TransferDeposit methodsFor: 'printing' stamp: 'BAB 9/26/2017 23:14:32'!
+description
+	^ 'Transferencia por ' append: self value asString.! !
+
+
 !TransferDeposit methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:47:58'!
 accept: anAccountTransactionVisitor
 	^ anAccountTransactionVisitor visitTransferDeposit: self.! !
@@ -693,6 +681,11 @@ value
 
 	^ transfer amount ! !
 
+
+
+!TransferWithdraw methodsFor: 'printing' stamp: 'BAB 9/26/2017 23:15:30'!
+description
+	^ 'Transferencia por -' append: self value asString.! !
 
 
 !TransferWithdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:48:04'!
@@ -735,7 +728,6 @@ value
 	^ value ! !
 
 
-
 !Withdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:48:11'!
 accept: anAccountTransactionVisitor 
 	^ anAccountTransactionVisitor visitWithdraw: self.! !
@@ -769,6 +761,14 @@ Object subclass: #AccountTransactionVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
+!AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:49:51'!
+accumulator
+	self subclassResponsibility ! !
+
+!AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:04:06'!
+initialize
+	self subclassResponsibility.! !
+
 !AccountTransactionVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:10:34'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment
 	self subclassResponsibility ! !
@@ -789,6 +789,19 @@ visitTransferWithdraw: aTransferWithdraw
 visitWithdraw: aWithdraw
 	self subclassResponsibility ! !
 
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'AccountTransactionVisitor class' category: #'PortfolioTreePrinter-Ejercicio'!
+AccountTransactionVisitor class
+	instanceVariableNames: ''!
+
+!AccountTransactionVisitor class methodsFor: 'as yet unclassified' stamp: 'BAB 9/28/2017 13:04:16'!
+new
+	| anAccountTransactionVisitor |
+	anAccountTransactionVisitor := super new.
+	anAccountTransactionVisitor initialize.
+	^ anAccountTransactionVisitor .! !
+
 
 !classDefinition: #BalanceVisitor category: #'PortfolioTreePrinter-Ejercicio'!
 AccountTransactionVisitor subclass: #BalanceVisitor
@@ -802,25 +815,29 @@ initialize
 	balance := 0.! !
 
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:43:20'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:07:06'!
+accumulated
+	^ balance! !
+
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:56:41'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	^ balance := balance - aCertificateOfDepositInvestment amount.! !
+	balance := balance - aCertificateOfDepositInvestment amount.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:43:43'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:56:36'!
 visitDeposit: aDeposit 
-	^ balance := balance + aDeposit value.! !
+	balance := balance + aDeposit value.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:43:52'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:56:33'!
 visitTransferDeposit: aTransferDeposit 
-	^ balance := balance + aTransferDeposit value.! !
+	balance := balance + aTransferDeposit value.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:44:04'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:56:28'!
 visitTransferWithdraw: aTransferWithdraw 
-	^ balance := balance - aTransferWithdraw value.! !
+	balance := balance - aTransferWithdraw value.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:44:10'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:56:23'!
 visitWithdraw: aWithdraw 
-	^ balance := balance - aWithdraw value.! !
+	balance := balance - aWithdraw value.! !
 
 
 !classDefinition: #InvestmentEarningsVisitor category: #'PortfolioTreePrinter-Ejercicio'!
@@ -830,26 +847,30 @@ AccountTransactionVisitor subclass: #InvestmentEarningsVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:46:22'!
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:24:21'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	^ investmentEarnings := investmentEarnings + aCertificateOfDepositInvestment interestPayment.! !
+	investmentEarnings := investmentEarnings + aCertificateOfDepositInvestment interestPayment.! !
 
-!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:46:49'!
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:24:26'!
 visitDeposit: aDeposit 
-	^ investmentEarnings.! !
+! !
 
-!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:47:57'!
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:24:29'!
 visitTransferDeposit: aTransferDeposit 
-	^ investmentEarnings.! !
+! !
 
-!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:47:49'!
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:24:33'!
 visitTransferWithdraw: aTransferWithdraw
-	^ investmentEarnings.! !
+! !
 
-!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:47:02'!
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:24:37'!
 visitWithdraw: aWithdraw
-	^ investmentEarnings.! !
+! !
 
+
+!InvestmentEarningsVisitor methodsFor: 'initialization' stamp: 'BAB 9/28/2017 13:24:51'!
+accumulated
+	^ investmentEarnings.! !
 
 !InvestmentEarningsVisitor methodsFor: 'initialization' stamp: 'HW 9/28/2017 01:13:56'!
 initialize
@@ -863,25 +884,28 @@ AccountTransactionVisitor subclass: #NetInvestmentVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:48:52'!
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:57:46'!
+accumulated
+	^ netInvestment ! !
+
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:57:04'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	^ netInvestment  := netInvestment  + aCertificateOfDepositInvestment amount.! !
+	netInvestment  := netInvestment  + aCertificateOfDepositInvestment amount.! !
 
-!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:18:18'!
-visitDeposit: aDeposit 
-	^ netInvestment.! !
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:57:15'!
+visitDeposit: aDeposit
+! !
 
-!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:48:27'!
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:57:18'!
 visitTransferDeposit: aTransferDeposit 
-	^ netInvestment.! !
+! !
 
-!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:18:55'!
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:57:23'!
 visitTransferWithdraw: aTransferWithdraw 
-	^ netInvestment.! !
+! !
 
-!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:18:37'!
-visitWithdraw: aWithdraw 
-	^ netInvestment.! !
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:57:30'!
+visitWithdraw: aWithdraw! !
 
 
 !NetInvestmentVisitor methodsFor: 'initialization' stamp: 'HW 9/28/2017 01:21:29'!
@@ -896,26 +920,29 @@ AccountTransactionVisitor subclass: #NetTransferVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:03:58'!
-visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	^ netTransfer.! !
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:58:36'!
+accumulated
+	^ netTransfer .! !
 
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:35:38'!
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:57:58'!
+visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment ! !
+
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:58:02'!
 visitDeposit: aDeposit 
-	^ netTransfer.! !
-
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:49:08'!
-visitTransferDeposit: aTransferDeposit 
-	^ netTransfer := netTransfer + aTransferDeposit value.! !
-
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:49:15'!
-visitTransferWithdraw: aTransferWithdraw 
-	^ netTransfer := netTransfer - aTransferWithdraw value.
 ! !
 
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:44:15'!
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:58:06'!
+visitTransferDeposit: aTransferDeposit 
+	netTransfer := netTransfer + aTransferDeposit value.! !
+
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:58:11'!
+visitTransferWithdraw: aTransferWithdraw 
+	netTransfer := netTransfer - aTransferWithdraw value.
+! !
+
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 12:58:21'!
 visitWithdraw: aWithdraw
-	^ netTransfer.! !
+! !
 
 
 !NetTransferVisitor methodsFor: 'initialization' stamp: 'HW 9/28/2017 00:32:39'!
@@ -931,32 +958,40 @@ NetTransferVisitor class
 
 !classDefinition: #SummaryLinesVisitor category: #'PortfolioTreePrinter-Ejercicio'!
 AccountTransactionVisitor subclass: #SummaryLinesVisitor
-	instanceVariableNames: ''
+	instanceVariableNames: 'summaryLines'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:02:48'!
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:09:46'!
+accumulated
+	^ summaryLines .! !
+
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:13:30'!
+initialize
+	summaryLines := OrderedCollection new.! !
+
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:09:37'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	 ^ 'Plazo fijo por ', aCertificateOfDepositInvestment value printString ,' durante ',
+	 summaryLines add: ('Plazo fijo por ', aCertificateOfDepositInvestment value printString ,' durante ',
 	aCertificateOfDepositInvestment numberOfDays printString , ' dias a una tna de ',
-	(aCertificateOfDepositInvestment annualInterestRate * 100) printString , '%'! !
+	(aCertificateOfDepositInvestment annualInterestRate * 100) printString , '%').! !
 
-!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:17:53'!
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:09:21'!
 visitDeposit: aDeposit 
-	^ 'Deposito por ', aDeposit value asString.! !
+	summaryLines add: ('Deposito por ', aDeposit value asString).! !
 
-!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:50:16'!
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:09:10'!
 visitTransferDeposit: aTransferDeposit
-	^ 'Transferencia por ', aTransferDeposit value printString.! !
+	summaryLines add: ('Transferencia por ', aTransferDeposit value printString).! !
 
-!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:20:31'!
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:08:56'!
 visitTransferWithdraw: aTransferWithdraw 
-	^ 'Transferencia por -', aTransferWithdraw value printString.! !
+	summaryLines add: ('Transferencia por -', aTransferWithdraw value printString).! !
 
-!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:19:29'!
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'BAB 9/28/2017 13:08:43'!
 visitWithdraw: aWithdraw 
-	^ 'Extraccion por ', aWithdraw value printString.! !
+	summaryLines add: ('Extraccion por ', aWithdraw value printString).! !
 
 
 !classDefinition: #CertificateOfDeposit category: #'PortfolioTreePrinter-Ejercicio'!
@@ -1020,10 +1055,12 @@ registers: aTransaction
 	self subclassResponsibility ! !
 
 
-!SummarizingAccount methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:34'!
+!SummarizingAccount methodsFor: 'transactions' stamp: 'BAB 9/28/2017 12:55:59'!
 balance
-
-	self subclassResponsibility ! !
+	| aBalanceVisitor |
+	aBalanceVisitor := BalanceVisitor new.
+	^ self transactionsAccept: aBalanceVisitor.
+ ! !
 
 !SummarizingAccount methodsFor: 'transactions' stamp: 'BAB 9/24/2017 13:50:37'!
 intersectsWith: anAccountsCollection
@@ -1034,6 +1071,14 @@ intersectsWith: anAccountsCollection
 transactions
 
 	self subclassResponsibility ! !
+
+!SummarizingAccount methodsFor: 'transactions' stamp: 'BAB 9/28/2017 13:00:12'!
+transactionsAccept: anAccountTransactionVisitor
+	self transactions do: [
+		:transaction | transaction accept: anAccountTransactionVisitor ].
+	
+	^ anAccountTransactionVisitor accumulated.
+		! !
 
 
 !classDefinition: #Portfolio category: #'PortfolioTreePrinter-Ejercicio'!
@@ -1053,12 +1098,6 @@ registers: aTransaction
 
 	^ accounts anySatisfy: [ :anAccount | anAccount registers: aTransaction ]  ! !
 
-
-!Portfolio methodsFor: 'transactions' stamp: 'HAW 8/13/2017 17:47:44'!
-balance
-
-	^ accounts sum: [ :account | account balance ]
-! !
 
 !Portfolio methodsFor: 'transactions' stamp: 'HAW 9/25/2017 19:40:20'!
 transactions 
@@ -1176,15 +1215,25 @@ initialize
 	super initialize.
 	transactions := OrderedCollection new.! !
 
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'BAB 9/28/2017 13:19:20'!
+investmentEarnings
+	| investmentEarningsVisitor |
+	investmentEarningsVisitor := InvestmentEarningsVisitor new.
+	^ self transactionsAccept: investmentEarningsVisitor.! !
 
-!ReceptiveAccount methodsFor: 'transactions' stamp: 'HW 9/28/2017 01:29:18'!
-balance
-	| balanceVisitor |
-	balanceVisitor := BalanceVisitor new.
-	^ transactions
-		inject: 0
-		into: [ :balance :transaction |
-			transaction accept: balanceVisitor ].! !
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'BAB 9/28/2017 13:22:22'!
+investmentNet
+	| anInvestmentNetVisitor |
+	anInvestmentNetVisitor := NetInvestmentVisitor new.
+	^ self transactionsAccept: anInvestmentNetVisitor.! !
+
+!ReceptiveAccount methodsFor: 'initialization' stamp: 'BAB 9/28/2017 13:19:53'!
+summaryLines
+	| summaryLinesVisitor |
+	summaryLinesVisitor := SummaryLinesVisitor new.
+	^ self transactionsAccept: summaryLinesVisitor.
+	! !
+
 
 !ReceptiveAccount methodsFor: 'transactions' stamp: 'HernanWilkinson 7/13/2011 18:37'!
 register: aTransaction
@@ -1196,6 +1245,12 @@ register: aTransaction
 transactions 
 
 	^ transactions copy! !
+
+!ReceptiveAccount methodsFor: 'transactions' stamp: 'BAB 9/28/2017 13:20:29'!
+transferNet
+	| netTransferVisitor |
+	netTransferVisitor  := NetTransferVisitor new.
+	^ self transactionsAccept: netTransferVisitor.! !
 
 
 !ReceptiveAccount methodsFor: 'testing' stamp: 'HernanWilkinson 7/13/2011 18:37'!
@@ -1209,6 +1264,55 @@ registers: aTtransaction
 
 	^ transactions includes: aTtransaction 
 ! !
+
+
+!classDefinition: #SummarizingAccountVisitor category: #'PortfolioTreePrinter-Ejercicio'!
+Object subclass: #SummarizingAccountVisitor
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!SummarizingAccountVisitor methodsFor: 'as yet unclassified' stamp: 'BAB 9/28/2017 12:43:23'!
+visitPortfolio: aPortfolio
+	self subclassResponsibility.! !
+
+!SummarizingAccountVisitor methodsFor: 'as yet unclassified' stamp: 'BAB 9/28/2017 12:43:48'!
+visitReceptiveAccount: aReceptiveAccount
+	self subclassResponsibility.! !
+
+
+!classDefinition: #PortfolioTreePrinterVisitor category: #'PortfolioTreePrinter-Ejercicio'!
+SummarizingAccountVisitor subclass: #PortfolioTreePrinterVisitor
+	instanceVariableNames: 'nameAccountDictionary'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!PortfolioTreePrinterVisitor methodsFor: 'as yet unclassified' stamp: 'BAB 9/28/2017 13:36:07'!
+initializeNamingAccountWith: aDictionary
+	nameAccountDictionary := aDictionary.	! !
+
+!PortfolioTreePrinterVisitor methodsFor: 'as yet unclassified' stamp: 'BAB 9/28/2017 12:44:59'!
+visitPortfolio: aPortfolio
+	! !
+
+!PortfolioTreePrinterVisitor methodsFor: 'as yet unclassified' stamp: 'BAB 9/28/2017 12:45:16'!
+visitReceptiveAccount: aReceptiveAccount
+		! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'PortfolioTreePrinterVisitor class' category: #'PortfolioTreePrinter-Ejercicio'!
+PortfolioTreePrinterVisitor class
+	instanceVariableNames: ''!
+
+!PortfolioTreePrinterVisitor class methodsFor: 'as yet unclassified' stamp: 'BAB 9/28/2017 13:35:20'!
+namingAccountWith: aDictionary
+	| aPortfolioTreePrinterVisitor |
+	aPortfolioTreePrinterVisitor := self new.
+	aPortfolioTreePrinterVisitor initializeNamingAccountWith: aDictionary.
+	^ aPortfolioTreePrinterVisitor.! !
 
 
 !classDefinition: #Transfer category: #'PortfolioTreePrinter-Ejercicio'!
@@ -1227,6 +1331,10 @@ register: anAmount from: aSourceAccount to: aTargetAccount
 	amount := anAmount.
 	TransferWithdraw registerFor: self on: aSourceAccount.
 	TransferDeposit registerFor: self on: aTargetAccount.! !
+
+!Transfer methodsFor: 'as yet unclassified' stamp: 'BAB 9/26/2017 23:05:14'!
+value
+	^ amount.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
