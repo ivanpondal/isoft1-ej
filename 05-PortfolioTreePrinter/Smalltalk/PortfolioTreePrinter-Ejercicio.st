@@ -802,30 +802,25 @@ initialize
 	balance := 0.! !
 
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:35:19'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:43:20'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	balance := balance - aCertificateOfDepositInvestment amount.
-	^ balance.! !
+	^ balance := balance - aCertificateOfDepositInvestment amount.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:35:59'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:43:43'!
 visitDeposit: aDeposit 
-	balance := balance + aDeposit value.
-	^ balance.! !
+	^ balance := balance + aDeposit value.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:36:23'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:43:52'!
 visitTransferDeposit: aTransferDeposit 
-	balance := balance + aTransferDeposit value.
-	^ balance.! !
+	^ balance := balance + aTransferDeposit value.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:36:35'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:44:04'!
 visitTransferWithdraw: aTransferWithdraw 
-	balance := balance - aTransferWithdraw value.
-	^ balance.! !
+	^ balance := balance - aTransferWithdraw value.! !
 
-!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:36:48'!
+!BalanceVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:44:10'!
 visitWithdraw: aWithdraw 
-	balance := balance - aWithdraw value.
-	^ balance.! !
+	^ balance := balance - aWithdraw value.! !
 
 
 !classDefinition: #InvestmentEarningsVisitor category: #'PortfolioTreePrinter-Ejercicio'!
@@ -835,13 +830,28 @@ AccountTransactionVisitor subclass: #InvestmentEarningsVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:37:17'!
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:46:22'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	investmentEarnings := investmentEarnings + aCertificateOfDepositInvestment interestPayment.
+	^ investmentEarnings := investmentEarnings + aCertificateOfDepositInvestment interestPayment.! !
+
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:46:49'!
+visitDeposit: aDeposit 
+	^ investmentEarnings.! !
+
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:47:57'!
+visitTransferDeposit: aTransferDeposit 
+	^ investmentEarnings.! !
+
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:47:49'!
+visitTransferWithdraw: aTransferWithdraw
+	^ investmentEarnings.! !
+
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:47:02'!
+visitWithdraw: aWithdraw
 	^ investmentEarnings.! !
 
 
-!InvestmentEarningsVisitor methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 01:13:56'!
+!InvestmentEarningsVisitor methodsFor: 'initialization' stamp: 'HW 9/28/2017 01:13:56'!
 initialize
 	investmentEarnings := 0.! !
 
@@ -853,13 +863,16 @@ AccountTransactionVisitor subclass: #NetInvestmentVisitor
 	poolDictionaries: ''
 	category: 'PortfolioTreePrinter-Ejercicio'!
 
-!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:37:49'!
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:48:52'!
 visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
-	netInvestment  := netInvestment  + aCertificateOfDepositInvestment amount.
-	^ netInvestment.! !
+	^ netInvestment  := netInvestment  + aCertificateOfDepositInvestment amount.! !
 
 !NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:18:18'!
 visitDeposit: aDeposit 
+	^ netInvestment.! !
+
+!NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:48:27'!
+visitTransferDeposit: aTransferDeposit 
 	^ netInvestment.! !
 
 !NetInvestmentVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:18:55'!
@@ -891,15 +904,14 @@ visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment
 visitDeposit: aDeposit 
 	^ netTransfer.! !
 
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:38:37'!
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:49:08'!
 visitTransferDeposit: aTransferDeposit 
-	netTransfer := netTransfer + aTransferDeposit value.
-	^ netTransfer.! !
+	^ netTransfer := netTransfer + aTransferDeposit value.! !
 
-!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:38:53'!
+!NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:49:15'!
 visitTransferWithdraw: aTransferWithdraw 
-	netTransfer := netTransfer - aTransferWithdraw value.
-	^ netTransfer.! !
+	^ netTransfer := netTransfer - aTransferWithdraw value.
+! !
 
 !NetTransferVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:44:15'!
 visitWithdraw: aWithdraw
@@ -933,6 +945,10 @@ visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment
 !SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:17:53'!
 visitDeposit: aDeposit 
 	^ 'Deposito por ', aDeposit value asString.! !
+
+!SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:50:16'!
+visitTransferDeposit: aTransferDeposit
+	^ 'Transferencia por ', aTransferDeposit value printString.! !
 
 !SummaryLinesVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:20:31'!
 visitTransferWithdraw: aTransferWithdraw 
