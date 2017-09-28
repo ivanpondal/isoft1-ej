@@ -570,16 +570,15 @@ initializeFor: aReceptiveAccount
 	
 	account := aReceptiveAccount ! !
 
-!AccountSummaryWithAllInvestmentInformation methodsFor: 'as yet unclassified' stamp: 'HernanWilkinson 7/17/2011 23:58'!
-lines 
-
-	| lines investmentEarnings |
-	
-	investmentEarnings := InvestmentNetVisitor for: account.
-	lines := (AccountSummaryWithInvestmentEarnings for: account) lines.
-	lines add: 'Inversiones por ', investmentEarnings value printString.
-	
-	 ^ lines! !
+!AccountSummaryWithAllInvestmentInformation methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:40:46'!
+lines
+	| lines investmentEarnings investmentEarningsValue |
+	investmentEarnings _ InvestmentNetVisitor for: account.
+	(ParallelExecution
+		of: [ lines _ (AccountSummaryWithInvestmentEarnings for: account) lines ]
+		and: [ investmentEarningsValue _ investmentEarnings value ]) run.
+	lines add: 'Inversiones por ' , investmentEarningsValue printString.
+	^ lines.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -605,16 +604,15 @@ initializeFor: aReceptiveAccount
 	
 	account := aReceptiveAccount ! !
 
-!AccountSummaryWithInvestmentEarnings methodsFor: 'as yet unclassified' stamp: 'HernanWilkinson 7/17/2011 23:53'!
-lines 
-
-	| lines investmentEarnings |
-	
-	investmentEarnings := InvestmentEarningVisitor for: account.
-	lines := (AccountSummary for: account) lines.
-	lines add: 'Ganancias por ', investmentEarnings value printString.
-	
-	 ^ lines! !
+!AccountSummaryWithInvestmentEarnings methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:40:53'!
+lines
+	| lines investmentEarnings investmentEarningsValue |
+	investmentEarnings _ InvestmentEarningVisitor for: account.
+	(ParallelExecution
+		of: [ lines _ (AccountSummary for: account) lines ]
+		and: [ investmentEarningsValue _ investmentEarnings value ]) run.
+	lines add: 'Ganancias por ' , investmentEarningsValue printString.
+	^ lines.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1251,6 +1249,38 @@ InvestmentNetVisitor class
 for: aReceptiveAccount 
 	
 	^ self new initializeFor: aReceptiveAccount ! !
+
+
+!classDefinition: #ParallelExecution category: #'PortfolioTimeConsuming-Ejercicio'!
+Object subclass: #ParallelExecution
+	instanceVariableNames: 'leftBlockClosure rightBlockClosure'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTimeConsuming-Ejercicio'!
+
+!ParallelExecution methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:39:04'!
+initializeWith: aBlockClosure and: anotherBlockClosure 
+	leftBlockClosure := aBlockClosure.
+	rightBlockClosure := anotherBlockClosure.! !
+
+!ParallelExecution methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:41:38'!
+run
+	| sem |
+	sem _ Semaphore new.
+	[leftBlockClosure value. sem signal ] fork.
+	rightBlockClosure value.
+	sem wait.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ParallelExecution class' category: #'PortfolioTimeConsuming-Ejercicio'!
+ParallelExecution class
+	instanceVariableNames: ''!
+
+!ParallelExecution class methodsFor: 'class initialization' stamp: 'HW 9/28/2017 20:37:19'!
+of: aBlockClosure and: anotherBlockClosure
+	^ self new initializeWith: aBlockClosure and: anotherBlockClosure.
+	! !
 
 
 !classDefinition: #SummarizingAccount category: #'PortfolioTimeConsuming-Ejercicio'!
