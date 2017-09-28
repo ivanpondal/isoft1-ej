@@ -474,10 +474,11 @@ accountTransferNetOf: aReceptiveAccount
 		into: [ :netTransfer :transaction | 
 			transaction accept: netTransferVisitor ].! !
 
-!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/27/2017 23:21:44'!
+!PortfolioTest methodsFor: 'test support' stamp: 'HW 9/28/2017 01:07:17'!
 investmentEarningsOf: aReceptiveAccount 
-	
-	^ aReceptiveAccount transactions inject: 0 into: [:investmentEarnings :transaction | transaction affectInvestmentEarnings: investmentEarnings ].! !
+	| investmentEarningsVisitor |
+	investmentEarningsVisitor := InvestmentEarningsVisitor new.
+	^ aReceptiveAccount transactions inject: 0 into: [:investmentEarnings :transaction | transaction accept: investmentEarningsVisitor ].! !
 
 !PortfolioTest methodsFor: 'test support' stamp: 'HW 9/27/2017 23:16:03'!
 investmentNetOf: aReceptiveAccount
@@ -516,7 +517,6 @@ affectBalance: aBalance
 value
 
 	self subclassResponsibility ! !
-
 
 
 !AccountTransaction methodsFor: 'as yet unclassified' stamp: 'HW 9/27/2017 23:22:07'!
@@ -560,19 +560,10 @@ initializeFor: aCertificateOfDeposit
 affectBalance: aBalance 
 	^ aBalance - certificateOfDeposit amount! !
 
-!CertificateOfDepositInvestment methodsFor: 'as yet unclassified' stamp: 'HW 9/27/2017 23:59:12'!
-affectInvestmentEarnings: anInvestmentEarning
-	^ anInvestmentEarning + certificateOfDeposit interestPayment! !
-
 !CertificateOfDepositInvestment methodsFor: 'as yet unclassified' stamp: 'HW 9/27/2017 23:16:24'!
 affectNetInvestment: aNetInvestment 
 	^ aNetInvestment  + certificateOfDeposit amount! !
 
-
-
-!CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/27/2017 23:56:31'!
-affectNetTransfer: aNetTransfer 
-	^ aNetTransfer! !
 
 !CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/28/2017 01:00:28'!
 amount
@@ -581,6 +572,10 @@ amount
 !CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/28/2017 01:00:49'!
 annualInterestRate
 	^ certificateOfDeposit annualInterestRate.! !
+
+!CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/28/2017 01:13:13'!
+interestPayment
+	^ certificateOfDeposit interestPayment.! !
 
 !CertificateOfDepositInvestment methodsFor: 'accessing' stamp: 'HW 9/28/2017 01:03:11'!
 numberOfDays
@@ -639,7 +634,6 @@ affectNetInvestment: anInvestmentNet
 	^ anInvestmentNet.! !
 
 
-
 !Deposit methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:47:46'!
 accept: anAccountTransactionVisitor 
 	^ anAccountTransactionVisitor visitDeposit: self.! !
@@ -688,7 +682,6 @@ value
 !TransferDeposit methodsFor: 'as yet unclassified' stamp: 'BAB 9/26/2017 23:23:01'!
 affectBalance: aBalance
 	^ aBalance + self value.! !
-
 
 
 !TransferDeposit methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:47:58'!
@@ -740,7 +733,6 @@ affectNetInvestment: aNetInvestment
 	^ aNetInvestment ! !
 
 
-
 !TransferWithdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:48:04'!
 accept: anAccountTransactionVisitor 
 	^ anAccountTransactionVisitor visitTransferWithdraw: self.! !
@@ -788,7 +780,6 @@ affectBalance: aBalance
 !Withdraw methodsFor: 'as yet unclassified' stamp: 'HW 9/27/2017 23:14:29'!
 affectNetInvestment: aNetInvestment 
 	^ aNetInvestment ! !
-
 
 
 !Withdraw methodsFor: 'evaluating' stamp: 'HW 9/28/2017 00:48:11'!
@@ -845,6 +836,26 @@ visitWithdraw: aWithdraw
 	self subclassResponsibility ! !
 
 
+!classDefinition: #InvestmentEarningsVisitor category: #'PortfolioTreePrinter-Ejercicio'!
+AccountTransactionVisitor subclass: #InvestmentEarningsVisitor
+	instanceVariableNames: 'investmentEarnings'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'PortfolioTreePrinter-Ejercicio'!
+
+!InvestmentEarningsVisitor methodsFor: 'evaluating' stamp: 'HW 9/28/2017 01:12:50'!
+visitCertificateOfDepositInvestment: aCertificateOfDepositInvestment 
+	| investmentEarningsPlusInterestPayment |
+	investmentEarningsPlusInterestPayment := investmentEarnings + aCertificateOfDepositInvestment interestPayment.
+	investmentEarnings  := investmentEarningsPlusInterestPayment.
+	^ investmentEarningsPlusInterestPayment.! !
+
+
+!InvestmentEarningsVisitor methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 01:13:56'!
+initialize
+	investmentEarnings := 0.! !
+
+
 !classDefinition: #NetTransferVisitor category: #'PortfolioTreePrinter-Ejercicio'!
 AccountTransactionVisitor subclass: #NetTransferVisitor
 	instanceVariableNames: 'netTransfer'
@@ -888,7 +899,6 @@ initialize
 !classDefinition: 'NetTransferVisitor class' category: #'PortfolioTreePrinter-Ejercicio'!
 NetTransferVisitor class
 	instanceVariableNames: 'netTransfer'!
-
 
 
 !classDefinition: #SummaryLinesVisitor category: #'PortfolioTreePrinter-Ejercicio'!
