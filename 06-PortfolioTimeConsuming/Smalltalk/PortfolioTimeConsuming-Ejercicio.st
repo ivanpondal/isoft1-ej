@@ -570,14 +570,12 @@ initializeFor: aReceptiveAccount
 	
 	account := aReceptiveAccount ! !
 
-!AccountSummaryWithAllInvestmentInformation methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:40:46'!
+!AccountSummaryWithAllInvestmentInformation methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 21:30:50'!
 lines
-	| lines investmentEarnings investmentEarningsValue |
-	investmentEarnings _ InvestmentNetVisitor for: account.
-	(ParallelExecution
-		of: [ lines _ (AccountSummaryWithInvestmentEarnings for: account) lines ]
-		and: [ investmentEarningsValue _ investmentEarnings value ]) run.
-	lines add: 'Inversiones por ' , investmentEarningsValue printString.
+	| lines investmentEarnings |
+	investmentEarnings _ Promise for: [ (InvestmentNetVisitor for: account) value].
+	lines _ (AccountSummaryWithInvestmentEarnings for: account) lines.
+	lines add: 'Inversiones por ' , investmentEarnings value printString.
 	^ lines.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -604,14 +602,12 @@ initializeFor: aReceptiveAccount
 	
 	account := aReceptiveAccount ! !
 
-!AccountSummaryWithInvestmentEarnings methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:40:53'!
+!AccountSummaryWithInvestmentEarnings methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 21:31:05'!
 lines
-	| lines investmentEarnings investmentEarningsValue |
-	investmentEarnings _ InvestmentEarningVisitor for: account.
-	(ParallelExecution
-		of: [ lines _ (AccountSummary for: account) lines ]
-		and: [ investmentEarningsValue _ investmentEarnings value ]) run.
-	lines add: 'Ganancias por ' , investmentEarningsValue printString.
+	| lines investmentEarnings |
+	investmentEarnings _ Promise for: [ (InvestmentEarningVisitor for: account) value].
+	lines _ (AccountSummary for: account) lines.
+	lines add: 'Ganancias por ' , investmentEarnings value printString.
 	^ lines.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -1251,35 +1247,33 @@ for: aReceptiveAccount
 	^ self new initializeFor: aReceptiveAccount ! !
 
 
-!classDefinition: #ParallelExecution category: #'PortfolioTimeConsuming-Ejercicio'!
-Object subclass: #ParallelExecution
-	instanceVariableNames: 'leftBlockClosure rightBlockClosure'
+!classDefinition: #Promise category: #'PortfolioTimeConsuming-Ejercicio'!
+Object subclass: #Promise
+	instanceVariableNames: 'sem promisedResult'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'PortfolioTimeConsuming-Ejercicio'!
 
-!ParallelExecution methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:39:04'!
-initializeWith: aBlockClosure and: anotherBlockClosure 
-	leftBlockClosure := aBlockClosure.
-	rightBlockClosure := anotherBlockClosure.! !
+!Promise methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 21:08:12'!
+initializeWith: aBlockClosure
+	sem := Semaphore new.
+	[ promisedResult := aBlockClosure value. sem signal] fork.! !
 
-!ParallelExecution methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 20:41:38'!
-run
-	| sem |
-	sem _ Semaphore new.
-	[leftBlockClosure value. sem signal ] fork.
-	rightBlockClosure value.
-	sem wait.! !
+!Promise methodsFor: 'as yet unclassified' stamp: 'HW 9/28/2017 21:33:53'!
+value
+	sem wait.
+	sem signal.
+	^ promisedResult.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
-!classDefinition: 'ParallelExecution class' category: #'PortfolioTimeConsuming-Ejercicio'!
-ParallelExecution class
+!classDefinition: 'Promise class' category: #'PortfolioTimeConsuming-Ejercicio'!
+Promise class
 	instanceVariableNames: ''!
 
-!ParallelExecution class methodsFor: 'class initialization' stamp: 'HW 9/28/2017 20:37:19'!
-of: aBlockClosure and: anotherBlockClosure
-	^ self new initializeWith: aBlockClosure and: anotherBlockClosure.
+!Promise class methodsFor: 'class initialization' stamp: 'HW 9/28/2017 20:58:44'!
+for: aBlockClosure
+	^ self new initializeWith: aBlockClosure.
 	! !
 
 
