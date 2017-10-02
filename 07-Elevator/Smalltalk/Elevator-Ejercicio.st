@@ -439,3 +439,79 @@ Object subclass: #ElevatorController
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Elevator-Ejercicio'!
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 18:41:20'!
+cabinFloorNumber
+	^cabinFloorNumber! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 19:48:20'!
+isCabinDoorClosed
+	^ cabinDoorState = 'closed'! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 19:52:26'!
+isCabinDoorClosing
+	^cabinDoorState = 'closing'! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 19:41:20'!
+isCabinDoorOpened
+	^ cabinDoorState = 'open'! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 19:42:01'!
+isCabinDoorOpening
+	^ cabinDoorState = 'opening'! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 20:16:59'!
+isCabinMoving
+	^ cabinState = 'moving'! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 19:51:52'!
+isCabinStopped
+	^ cabinState = 'stopped'! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 20:24:20'!
+isCabinWaitingForPeople
+	^ true! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 19:47:19'!
+isIdle
+	^ state = 'idle'! !
+
+!ElevatorController methodsFor: 'accessing' stamp: 'asdf 10/2/2017 20:03:33'!
+isWorking
+	^ (state = 'idle') not! !
+
+
+!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 19:54:18'!
+cabinDoorClosed
+	state = 'floorPressed' ifTrue: [cabinState := 'moving'].
+	cabinDoorState := 'closed'
+	! !
+
+!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:23:12'!
+cabinDoorOpened
+	state = 'reachedFloor' ifTrue: [ state := 'idle' ].
+	cabinDoorState := 'open'.! !
+
+!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:22:16'!
+cabinOnFloor: aFloorNumber
+	state := 'reachedFloor'.
+	cabinDoorState := 'opening'.
+	cabinState := 'stopped'.
+	cabinFloorNumber := aFloorNumber! !
+
+!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:17:37'!
+goUpPushedFromFloor: aFloorNumber 
+	cabinDoorState := 'closing'.
+	state := 'floorPressed'! !
+
+!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:01:06'!
+openCabinDoor
+	(cabinState = 'stopped' and: (cabinDoorState = 'open') not) ifTrue: [cabinDoorState := 'opening']! !
+
+
+!ElevatorController methodsFor: 'initialization' stamp: 'asdf 10/2/2017 19:52:03'!
+initialize
+	cabinFloorNumber := 0.
+	state := 'idle'.
+	cabinState := 'stopped'.
+	cabinDoorState  := 'open'.! !
