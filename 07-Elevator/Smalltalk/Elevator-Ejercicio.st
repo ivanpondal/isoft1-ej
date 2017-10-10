@@ -499,6 +499,10 @@ cabinOnFloor: aFloorNumber
 	cabinState := 'stopped'.
 	cabinFloorNumber := aFloorNumber! !
 
+!ElevatorController methodsFor: 'evaluating' stamp: 'HW 10/9/2017 18:38:57'!
+closeCabinDoor
+	(state = 'idle' or: state = 'reachedFloor' or: cabinState = 'moving') not ifTrue: [ cabinDoorState := 'closing']! !
+
 !ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:17:37'!
 goUpPushedFromFloor: aFloorNumber 
 	cabinDoorState := 'closing'.
@@ -507,6 +511,10 @@ goUpPushedFromFloor: aFloorNumber
 !ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:01:06'!
 openCabinDoor
 	(cabinState = 'stopped' and: (cabinDoorState = 'open') not) ifTrue: [cabinDoorState := 'opening']! !
+
+!ElevatorController methodsFor: 'evaluating' stamp: 'HW 10/9/2017 18:28:45'!
+waitForPeopleTimedOut
+	cabinDoorState := 'closing'! !
 
 
 !ElevatorController methodsFor: 'initialization' stamp: 'asdf 10/2/2017 19:52:03'!
