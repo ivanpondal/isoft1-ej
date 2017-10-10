@@ -1,9 +1,29 @@
 !classDefinition: #ElevatorEmergency category: #'Elevator-Ejercicio'!
 Error subclass: #ElevatorEmergency
-	instanceVariableNames: ''
+	instanceVariableNames: 'message'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Elevator-Ejercicio'!
+
+!ElevatorEmergency methodsFor: 'as yet unclassified' stamp: 'BAB 10/10/2017 12:02:52'!
+initializeWithMessage: aMessage
+	message := aMessage ! !
+
+!ElevatorEmergency methodsFor: 'as yet unclassified' stamp: 'BAB 10/10/2017 12:42:04'!
+messageText
+	^ message! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ElevatorEmergency class' category: #'Elevator-Ejercicio'!
+ElevatorEmergency class
+	instanceVariableNames: ''!
+
+!ElevatorEmergency class methodsFor: 'as yet unclassified' stamp: 'BAB 10/10/2017 12:32:24'!
+withMessage: aMessage
+	| anEmergency |
+	anEmergency := self new initializeWithMessage: aMessage.
+	anEmergency signal! !
 
 
 !classDefinition: #ElevatorTest category: #'Elevator-Ejercicio'!
@@ -435,7 +455,7 @@ test05ElevatorGetsIdleWhenDoorGetOpened
 
 !classDefinition: #ElevatorController category: #'Elevator-Ejercicio'!
 Object subclass: #ElevatorController
-	instanceVariableNames: 'state cabinState cabinDoorState cabinFloorNumber floorsToGo'
+	instanceVariableNames: 'state cabinState cabinDoorState cabinFloorNumber floorsToGo destination'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Elevator-Ejercicio'!
@@ -481,19 +501,21 @@ isWorking
 	^ (state = 'idle') not! !
 
 
-!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 19:54:18'!
+!ElevatorController methodsFor: 'evaluating' stamp: 'BAB 10/10/2017 12:42:24'!
 cabinDoorClosed
+	(cabinDoorState = 'closing') ifFalse: [ElevatorEmergency withMessage: 'Sensor de puerta desincronizado'].
 	state = 'floorPressed' ifTrue: [cabinState := 'moving'].
 	cabinDoorState := 'closed'
 	! !
 
-!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:23:12'!
+!ElevatorController methodsFor: 'evaluating' stamp: 'BAB 10/10/2017 12:49:46'!
 cabinDoorOpened
-	state = 'reachedFloor' ifTrue: [ state := 'idle' ].
+	(state = 'reachedFloor' and: [cabinFloorNumber = destination]) ifTrue: [ state := 'idle' ].
 	cabinDoorState := 'open'.! !
 
-!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:22:16'!
+!ElevatorController methodsFor: 'evaluating' stamp: 'BAB 10/10/2017 12:25:52'!
 cabinOnFloor: aFloorNumber
+	((cabinFloorNumber + 1) = aFloorNumber  ) ifFalse: [ElevatorEmergency withMessage: 'Sensor de cabina desincronizado'].
 	state := 'reachedFloor'.
 	cabinDoorState := 'opening'.
 	cabinState := 'stopped'.
@@ -503,10 +525,11 @@ cabinOnFloor: aFloorNumber
 closeCabinDoor
 	(state = 'idle' or: state = 'reachedFloor' or: cabinState = 'moving') not ifTrue: [ cabinDoorState := 'closing']! !
 
-!ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:17:37'!
+!ElevatorController methodsFor: 'evaluating' stamp: 'BAB 10/10/2017 12:50:33'!
 goUpPushedFromFloor: aFloorNumber 
 	cabinDoorState := 'closing'.
-	state := 'floorPressed'! !
+	state := 'floorPressed'.
+	destination := destination max: aFloorNumber.! !
 
 !ElevatorController methodsFor: 'evaluating' stamp: 'asdf 10/2/2017 20:01:06'!
 openCabinDoor
@@ -517,9 +540,10 @@ waitForPeopleTimedOut
 	cabinDoorState := 'closing'! !
 
 
-!ElevatorController methodsFor: 'initialization' stamp: 'asdf 10/2/2017 19:52:03'!
+!ElevatorController methodsFor: 'initialization' stamp: 'BAB 10/10/2017 12:50:21'!
 initialize
 	cabinFloorNumber := 0.
 	state := 'idle'.
 	cabinState := 'stopped'.
-	cabinDoorState  := 'open'.! !
+	cabinDoorState  := 'open'.
+	destination := 0.! !
