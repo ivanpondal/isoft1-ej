@@ -701,7 +701,7 @@ opening
 
 !classDefinition: #DoorState category: #'Elevator-Ejercicio'!
 Object subclass: #DoorState
-	instanceVariableNames: 'door'
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Elevator-Ejercicio'!
@@ -768,13 +768,12 @@ isOpening
 closedFor: aDoor 
 	ElevatorEmergency signal: 'Sensor de puerta desincronizado'.! !
 
-!DoorClosed methodsFor: 'evaluating' stamp: 'asdf 10/11/2017 21:31:51'!
-open
-	door changeStateTo: (DoorOpening for: door)! !
+!DoorClosed methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 17:09:25'!
+closingFor: aDoor! !
 
-!DoorClosed methodsFor: 'evaluating' stamp: 'HW 10/11/2017 23:38:22'!
-opening
-	door changeStateTo: (DoorOpening for: door)! !
+!DoorClosed methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 17:07:07'!
+openFor: aDoor 
+	aDoor changeStateTo: DoorOpen new.! !
 
 !DoorClosed methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:46:06'!
 openingFor: aDoor 
@@ -806,13 +805,16 @@ isClosed
 	^ false! !
 
 
-!DoorClosing methodsFor: 'evaluating' stamp: 'HW 10/12/2017 00:56:28'!
-closed
-	self shouldBeImplemented.! !
-
 !DoorClosing methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:04:42'!
 closedFor: aDoor 
 	aDoor changeStateTo: DoorClosed new.! !
+
+!DoorClosing methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 17:05:46'!
+closingFor: aDoor! !
+
+!DoorClosing methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 17:04:45'!
+openFor: aDoor 
+	aDoor changeStateTo: DoorOpen new.! !
 
 !DoorClosing methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:49:46'!
 openingFor: aDoor 
@@ -830,16 +832,13 @@ DoorState subclass: #DoorOpen
 closedFor: aDoor 
 	ElevatorEmergency signal: 'Sensor de puerta desincronizado'.! !
 
-!DoorOpen methodsFor: 'evaluating' stamp: 'asdf 10/11/2017 21:17:43'!
-closing
-	door changeStateTo: (DoorClosing for: door).! !
-
 !DoorOpen methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:03:48'!
 closingFor: aDoor 
 	aDoor changeStateTo: DoorClosing new.! !
 
-!DoorOpen methodsFor: 'evaluating' stamp: 'HW 10/11/2017 23:46:30'!
-opening! !
+!DoorOpen methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 17:03:52'!
+openFor: aDoor 
+! !
 
 !DoorOpen methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:46:51'!
 openingFor: aDoor 
@@ -894,10 +893,6 @@ closedFor: aDoor
 !DoorOpening methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 13:01:25'!
 closingFor: aDoor 
 ! !
-
-!DoorOpening methodsFor: 'evaluating' stamp: 'HW 10/11/2017 23:44:27'!
-open
-	door changeStateTo: (DoorOpen for: door)! !
 
 !DoorOpening methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:46:34'!
 openFor: aDoor 
@@ -983,9 +978,9 @@ goUpPushedFromFloor: aFloorNumber
 	floorsToGo add: aFloorNumber.
 ! !
 
-!ElevatorController methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:40:39'!
+!ElevatorController methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 16:58:06'!
 openCabinDoor
-	state openCabinDoorFor: self with: cabin.! !
+	state openCabinDoorFor: self with: cabin with: floorsToGo.! !
 
 !ElevatorController methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:34:15'!
 waitForPeopleTimedOut
@@ -1006,25 +1001,13 @@ Object subclass: #ElevatorState
 	poolDictionaries: ''
 	category: 'Elevator-Ejercicio'!
 
-!ElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 00:48:01'!
-cabinDoorClosedFor: anElevatorController with: aCabin 
-	self subclassResponsibility ! !
-
 !ElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 13:26:42'!
 cabinDoorClosedFor: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin goUp.
 	anElevatorController changeStateTo: LiftingElevatorState new.! !
 
-!ElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:33:37'!
-cabinDoorOpenedFor: anElevatorController with: aCabin 
-	self subclassResponsibility ! !
-
 !ElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 11:41:14'!
 cabinDoorOpenedFor: anElevatorController with: aCabin with: someFloorsToGo
-	self subclassResponsibility ! !
-
-!ElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:09:42'!
-cabinOnFloor: aSmallInteger for: anElevatorController with: aCabin 
 	self subclassResponsibility ! !
 
 !ElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 11:41:00'!
@@ -1035,16 +1018,12 @@ cabinOnFloor: aSmallInteger for: anElevatorController with: aCabin with: someFlo
 closeCabinDoorFor: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin closeDoor .! !
 
-!ElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 00:39:55'!
-goUpPushedFromFloor: aSmallInteger for: anElevatorController with: aCabin 
-	self subclassResponsibility .! !
-
 !ElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 11:40:36'!
 goUpPushedFromFloor: aFloor for: anElevatorController with: aCabin with: someFloorsToGo
 	self subclassResponsibility .! !
 
-!ElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:41:01'!
-openCabinDoorFor: anElevatorController with: aCabin 
+!ElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 16:59:32'!
+openCabinDoorFor: anElevatorController with: aCabin with: someFloorsToGo
 	self subclassResponsibility ! !
 
 !ElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:35:18'!
@@ -1077,20 +1056,10 @@ isWorking
 	^ true! !
 
 
-!CalledElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 00:51:54'!
-cabinDoorClosedFor: anElevatorController with: aCabin 
-	aCabin goUp.
-	anElevatorController changeStateTo: LiftingElevatorState new! !
-
 !CalledElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:21:27'!
 cabinDoorClosedFor: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin goUp.
 	anElevatorController changeStateTo: LiftingElevatorState new! !
-
-!CalledElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:49:17'!
-openCabinDoorFor: anElevatorController with: aCabin 
-	aCabin openDoor.
-	anElevatorController changeStateTo: ReachedFloorElevatorState new.! !
 
 !CalledElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:21:23'!
 openCabinDoorFor: anElevatorController with: aCabin with: someFloorsToGo
@@ -1109,19 +1078,10 @@ ElevatorState subclass: #IdleElevatorState
 closeCabinDoorFor: anElevatorController with: aCabin with: anOrderedCollection 
 	! !
 
-!IdleElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 00:41:51'!
-goUpPushedFromFloor: aSmallInteger for: anElevatorController with: aCabin 
-	aCabin closeDoor.
-	anElevatorController changeStateTo: CalledElevatorState new.! !
-
 !IdleElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:20:19'!
 goUpPushedFromFloor: aSmallInteger for: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin closeDoor.
 	anElevatorController changeStateTo: CalledElevatorState new.! !
-
-!IdleElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:41:48'!
-openCabinDoorFor: anElevatorController with: aCabin 
-	aCabin openDoor.! !
 
 !IdleElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:20:30'!
 openCabinDoorFor: anElevatorController with: aCabin with: someFloorsToGo
@@ -1154,13 +1114,6 @@ isWorking
 
 
 !LiftingElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 13:15:52'!
-cabinOnFloor: aFloorNumber for: anElevatorController with: aCabin
-	aCabin reachedFloor: aFloorNumber.
-	aCabin stop.
-	aCabin openDoor.
-	anElevatorController changeStateTo: ReachedFloorElevatorState new.! !
-
-!LiftingElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 13:15:52'!
 cabinOnFloor: aFloorNumber for: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin reachedFloor: aFloorNumber.
 	aCabin stop.
@@ -1169,10 +1122,6 @@ cabinOnFloor: aFloorNumber for: anElevatorController with: aCabin with: someFloo
 
 !LiftingElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 13:35:24'!
 goUpPushedFromFloor: aSmallInteger for: anElevatorController with: aCabin with: anOrderedCollection 
-! !
-
-!LiftingElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:50:41'!
-openCabinDoorFor: anElevatorController with: aCabin 
 ! !
 
 !LiftingElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:20:00'!
@@ -1196,11 +1145,6 @@ isWorking
 	^ true! !
 
 
-!ReachedFloorElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:35:02'!
-cabinDoorOpenedFor: anElevatorController with: aCabin
-	aCabin waitForPeople.
-	anElevatorController changeStateTo: IdleElevatorState new.! !
-
 !ReachedFloorElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:37:06'!
 cabinDoorOpenedFor: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin waitForPeople.
@@ -1215,10 +1159,6 @@ cabinOnFloor: aSmallInteger for: anElevatorController with: aCabin with: anOrder
 closeCabinDoorFor: anElevatorController with: aCabin with: anOrderedCollection 
 	aCabin closeDoor.! !
 
-!ReachedFloorElevatorState methodsFor: 'evaluating' stamp: 'HW 10/12/2017 01:51:36'!
-openCabinDoorFor: anElevatorController with: aCabin 
-	aCabin openDoor.! !
-
 !ReachedFloorElevatorState methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 12:19:31'!
 openCabinDoorFor: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin openDoor.! !
@@ -1228,9 +1168,6 @@ waitForPeopleTimedOutFor: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin closeDoor.
 	anElevatorController changeStateTo: CalledElevatorState new.! !
 
-
-!ReachedFloorElevatorState methodsFor: 'as yet unclassified' stamp: 'BAB 10/12/2017 11:28:55'!
-goUpPushedFromFloor: aFloor for: anElevatorController with: aCabin ! !
 
 !ReachedFloorElevatorState methodsFor: 'as yet unclassified' stamp: 'BAB 10/12/2017 12:19:24'!
 goUpPushedFromFloor: aFloor for: anElevatorController with: aCabin with: someFloorsToGo! !
