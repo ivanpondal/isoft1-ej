@@ -1113,10 +1113,6 @@ isWorking
 	^ true! !
 
 
-!LiftingElevator methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 17:22:34'!
-cabinDoorOpenedFor: anElevatorController with: aCabin with: someFloorsToGo
-	aCabin doorOpen.! !
-
 !LiftingElevator methodsFor: 'evaluating' stamp: 'BAB 10/12/2017 17:36:44'!
 cabinOnFloor: aFloorNumber for: anElevatorController with: aCabin with: someFloorsToGo
 	aCabin reachedFloor: aFloorNumber.
