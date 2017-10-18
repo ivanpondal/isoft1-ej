@@ -543,7 +543,7 @@ Object subclass: #Cabin
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!Cabin methodsFor: 'initialization' stamp: 'BAB 10/14/2017 20:35:16'!
+!Cabin methodsFor: 'initialization' stamp: 'IP 10/18/2017 20:42:18'!
 initializeOf: anElevator
 
 	elevator := anElevator.
@@ -551,7 +551,7 @@ initializeOf: anElevator
 	motor := Motor new.
 	currentFloorNumber := 0.
 	state := CabinStoppedState for: self.
-	observers:= Set new.
+	observers:= OrderedCollection new.
 	! !
 
 
@@ -751,13 +751,13 @@ Object subclass: #CabinDoor
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!CabinDoor methodsFor: 'initialization' stamp: 'BAB 10/14/2017 20:35:21'!
+!CabinDoor methodsFor: 'initialization' stamp: 'IP 10/18/2017 20:42:34'!
 initializeOf: aCabin
 
 	cabin := aCabin.
 	motor := Motor new.
 	state :=CabinDoorOpenedState for: self.
-	observers := Set new.! !
+	observers := OrderedCollection new.! !
 
 
 !CabinDoor methodsFor: 'actions' stamp: 'BAB 10/14/2017 20:13:22'!
@@ -1361,48 +1361,6 @@ accept: aVisitor
 	aVisitor visitCabinWaitingForPeople: self! !
 
 
-!classDefinition: #ChangeManager category: #'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
-Object subclass: #ChangeManager
-	instanceVariableNames: 'subscriptions'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
-
-!ChangeManager methodsFor: 'as yet unclassified' stamp: 'BAB 10/14/2017 20:22:24'!
-initialize
-	subscriptions := Dictionary new.! !
-
-!ChangeManager methodsFor: 'as yet unclassified' stamp: 'BAB 10/14/2017 20:00:26'!
-notifySubscriptorsOf: aSubject
-	(subscriptions at: aSubject ) collect: [:aSubscriptor | aSubject stateAccept: aSubscriptor ].! !
-
-!ChangeManager methodsFor: 'as yet unclassified' stamp: 'BAB 10/14/2017 20:34:57'!
-subscribe: anObserver to: aSubject
-	subscriptions at: aSubject ifAbsentPut: Set new.
-	(subscriptions at: aSubject ) add: anObserver.
-	aSubject addObserver: self. ! !
-
-!ChangeManager methodsFor: 'as yet unclassified' stamp: 'BAB 10/14/2017 20:01:16'!
-unsubscribe: anObserver of: aSubject
-	self shouldBeImplemented .! !
-
-!ChangeManager methodsFor: 'as yet unclassified' stamp: 'BAB 10/14/2017 20:21:27'!
-updateFor: aSubject
-	self notifySubscriptorsOf: aSubject.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'ChangeManager class' category: #'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
-ChangeManager class
-	instanceVariableNames: 'uniqueChangeManager'!
-
-!ChangeManager class methodsFor: 'as yet unclassified' stamp: 'BAB 10/14/2017 20:38:37'!
-new
-	uniqueChangeManager ifNil: [
-		uniqueChangeManager := self basicNew initialize].
-	^ uniqueChangeManager .! !
-
-
 !classDefinition: #Elevator category: #'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 Object subclass: #Elevator
 	instanceVariableNames: 'cabin state floorsToGo'
@@ -1503,13 +1461,12 @@ Object subclass: #ElevatorConsole
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!ElevatorConsole methodsFor: 'initialization' stamp: 'BAB 10/14/2017 20:03:16'!
+!ElevatorConsole methodsFor: 'initialization' stamp: 'IP 10/18/2017 20:44:37'!
 initializeOf: anElevator
 	
 	stream := WriteStream on: String new.
-	changeManager := ChangeManager new.
-	changeManager subscribe: self to: anElevator cabin.
-	changeManager subscribe: self to: anElevator cabin door.
+	anElevator cabin addObserver: self.
+	anElevator cabin door addObserver: self.
 		
 ! !
 
@@ -1563,6 +1520,11 @@ visitCabinStopped: aCabinStoppedState
 visitCabinWaitingForPeople: aCabinWaitingForPeopleState 
 	
 	! !
+
+
+!ElevatorConsole methodsFor: 'evaluating' stamp: 'IP 10/18/2017 20:47:00'!
+updateFor: aSubject 
+	aSubject stateAccept: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -1672,11 +1634,11 @@ Object subclass: #ElevatorStatusView
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!ElevatorStatusView methodsFor: 'initialization' stamp: 'BAB 10/14/2017 20:38:22'!
+!ElevatorStatusView methodsFor: 'initialization' stamp: 'IP 10/18/2017 20:50:17'!
 initializeOf: anElevator
-	changeManager := ChangeManager new.
-	changeManager subscribe: self to: anElevator cabin.
-	changeManager subscribe: self to: anElevator cabin door.
+
+	anElevator cabin addObserver: self.
+	anElevator cabin door addObserver: self.
 	! !
 
 
@@ -1725,6 +1687,11 @@ visitCabinStopped: aCabinStoppedState
 visitCabinWaitingForPeople: aCabinWaitingForPeopleState 
 	
 	cabinFieldModel := 'Waiting for People'! !
+
+
+!ElevatorStatusView methodsFor: 'evaluating' stamp: 'IP 10/18/2017 20:50:50'!
+updateFor: aSubject
+	aSubject stateAccept: self.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
