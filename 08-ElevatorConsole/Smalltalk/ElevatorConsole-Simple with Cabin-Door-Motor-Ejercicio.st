@@ -536,6 +536,43 @@ setUp
 	door := cabin door.! !
 
 
+!classDefinition: #ActiveVariable category: #'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
+Object subclass: #ActiveVariable
+	instanceVariableNames: 'value daemon updateDaemon'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
+
+!ActiveVariable methodsFor: 'as yet unclassified' stamp: 'IP 10/18/2017 21:37:04'!
+doesNotUnderstand: aSelector
+	^ aSelector sendTo: value.! !
+
+!ActiveVariable methodsFor: 'as yet unclassified' stamp: 'IP 10/18/2017 21:28:23'!
+initializeWith: aValue andUpdateDaemon: aBlock.
+	value _ aValue.
+	updateDaemon _ aBlock.! !
+
+
+!ActiveVariable methodsFor: 'accessing' stamp: 'IP 10/18/2017 21:29:40'!
+updateWith: aValue
+	value _ aValue.
+	updateDaemon value.! !
+
+!ActiveVariable methodsFor: 'accessing' stamp: 'IP 10/18/2017 21:28:36'!
+value
+	^ value! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'ActiveVariable class' category: #'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
+ActiveVariable class
+	instanceVariableNames: ''!
+
+!ActiveVariable class methodsFor: 'as yet unclassified' stamp: 'IP 10/18/2017 21:27:53'!
+with: aValue andUpdateDaemon: aBlock
+	^ super new initializeWith: aValue andUpdateDaemon: aBlock.! !
+
+
 !classDefinition: #Cabin category: #'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 Object subclass: #Cabin
 	instanceVariableNames: 'elevator state door motor currentFloorNumber observers'
@@ -543,16 +580,15 @@ Object subclass: #Cabin
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!Cabin methodsFor: 'initialization' stamp: 'IP 10/18/2017 20:42:18'!
+!Cabin methodsFor: 'initialization' stamp: 'IP 10/18/2017 21:31:36'!
 initializeOf: anElevator
 
 	elevator := anElevator.
 	door := CabinDoor of: self.
 	motor := Motor new.
 	currentFloorNumber := 0.
-	state := CabinStoppedState for: self.
-	observers:= OrderedCollection new.
-	! !
+	state := ActiveVariable with: (CabinStoppedState for: self) andUpdateDaemon: [ self notifyObserversOfChange ].
+	observers:= OrderedCollection new.! !
 
 
 !Cabin methodsFor: 'actions' stamp: 'HAW 10/3/2017 16:48:24'!
@@ -569,25 +605,22 @@ waitForPeople
 ! !
 
 
-!Cabin methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:20:30'!
+!Cabin methodsFor: 'state change' stamp: 'IP 10/18/2017 21:31:57'!
 makeMoving
 	
-	state := CabinMovingState for: self.
-	self notifyObserversOfChange.
+	state updateWith: (CabinMovingState for: self).
 	
 	! !
 
-!Cabin methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:20:44'!
+!Cabin methodsFor: 'state change' stamp: 'IP 10/18/2017 21:32:28'!
 makeStopped
 	
-	state := CabinStoppedState for: self.
-	self notifyObserversOfChange ! !
+	state updateWith: (CabinStoppedState for: self).! !
 
-!Cabin methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:20:52'!
+!Cabin methodsFor: 'state change' stamp: 'IP 10/18/2017 21:32:15'!
 makeWaitingForPeople
 	
-	state := CabinWaitingForPeopleState for: self.
-	self notifyObserversOfChange.! !
+	state updateWith: (CabinWaitingForPeopleState for: self).! !
 
 
 !Cabin methodsFor: 'sensor activation' stamp: 'HAW 10/3/2017 16:47:02'!
@@ -751,12 +784,12 @@ Object subclass: #CabinDoor
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!CabinDoor methodsFor: 'initialization' stamp: 'IP 10/18/2017 20:42:34'!
+!CabinDoor methodsFor: 'initialization' stamp: 'IP 10/18/2017 21:38:31'!
 initializeOf: aCabin
 
 	cabin := aCabin.
 	motor := Motor new.
-	state :=CabinDoorOpenedState for: self.
+	state := ActiveVariable with: (CabinDoorOpenedState for: self) andUpdateDaemon: [ self notifyObserversOfChange ].
 	observers := OrderedCollection new.! !
 
 
@@ -894,32 +927,25 @@ isMotorStopped
 	^motor isStopped! !
 
 
-!CabinDoor methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:31:41'!
+!CabinDoor methodsFor: 'state change' stamp: 'IP 10/18/2017 21:39:57'!
 makeClosed
 	
-	state := CabinDoorClosedState for: self.
-	self notifyObserversOfChange .! !
+	state updateWith: (CabinDoorClosedState for: self).! !
 
-!CabinDoor methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:31:48'!
+!CabinDoor methodsFor: 'state change' stamp: 'IP 10/18/2017 21:40:07'!
 makeClosing
 	
-	state := CabinDoorClosingState for: self.
-	
-	self notifyObserversOfChange .! !
+	state updateWith: (CabinDoorClosingState for: self).! !
 
-!CabinDoor methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:31:54'!
+!CabinDoor methodsFor: 'state change' stamp: 'IP 10/18/2017 21:40:15'!
 makeOpened
 	
-	state := CabinDoorOpenedState for: self.
-	
-	self notifyObserversOfChange .! !
+	state updateWith: (CabinDoorOpenedState for: self).! !
 
-!CabinDoor methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:31:58'!
+!CabinDoor methodsFor: 'state change' stamp: 'IP 10/18/2017 21:40:24'!
 makeOpening
 	
-	state := CabinDoorOpeningState for: self.
-	
-	self notifyObserversOfChange .! !
+	state updateWith: (CabinDoorOpeningState for: self).! !
 
 !CabinDoor methodsFor: 'state change' stamp: 'BAB 10/14/2017 20:31:12'!
 notifyObserversOfChange
