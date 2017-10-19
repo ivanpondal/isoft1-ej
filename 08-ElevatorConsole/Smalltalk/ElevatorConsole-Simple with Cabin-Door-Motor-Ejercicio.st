@@ -543,9 +543,9 @@ Object subclass: #ActiveVariable
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!ActiveVariable methodsFor: 'as yet unclassified' stamp: 'IP 10/18/2017 21:37:04'!
-doesNotUnderstand: aSelector
-	^ aSelector sendTo: value.! !
+!ActiveVariable methodsFor: 'as yet unclassified' stamp: 'BAB 10/19/2017 16:27:46'!
+doesNotUnderstand: aMessage
+	^ aMessage sendTo: value.! !
 
 !ActiveVariable methodsFor: 'as yet unclassified' stamp: 'IP 10/18/2017 21:28:23'!
 initializeWith: aValue andUpdateDaemon: aBlock.
@@ -568,9 +568,9 @@ value
 ActiveVariable class
 	instanceVariableNames: ''!
 
-!ActiveVariable class methodsFor: 'as yet unclassified' stamp: 'IP 10/18/2017 21:27:53'!
+!ActiveVariable class methodsFor: 'as yet unclassified' stamp: 'BAB 10/19/2017 16:27:54'!
 with: aValue andUpdateDaemon: aBlock
-	^ super new initializeWith: aValue andUpdateDaemon: aBlock.! !
+	^ self new initializeWith: aValue andUpdateDaemon: aBlock.! !
 
 
 !classDefinition: #Cabin category: #'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
@@ -580,7 +580,7 @@ Object subclass: #Cabin
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!Cabin methodsFor: 'initialization' stamp: 'IP 10/18/2017 21:31:36'!
+!Cabin methodsFor: 'initialization' stamp: 'BAB 10/19/2017 16:28:17'!
 initializeOf: anElevator
 
 	elevator := anElevator.
@@ -588,7 +588,7 @@ initializeOf: anElevator
 	motor := Motor new.
 	currentFloorNumber := 0.
 	state := ActiveVariable with: (CabinStoppedState for: self) andUpdateDaemon: [ self notifyObserversOfChange ].
-	observers:= OrderedCollection new.! !
+	observers:= Set new.! !
 
 
 !Cabin methodsFor: 'actions' stamp: 'HAW 10/3/2017 16:48:24'!
@@ -784,13 +784,13 @@ Object subclass: #CabinDoor
 	poolDictionaries: ''
 	category: 'ElevatorConsole-Simple with Cabin-Door-Motor-Ejercicio'!
 
-!CabinDoor methodsFor: 'initialization' stamp: 'IP 10/18/2017 21:38:31'!
+!CabinDoor methodsFor: 'initialization' stamp: 'BAB 10/19/2017 16:28:26'!
 initializeOf: aCabin
 
 	cabin := aCabin.
 	motor := Motor new.
 	state := ActiveVariable with: (CabinDoorOpenedState for: self) andUpdateDaemon: [ self notifyObserversOfChange ].
-	observers := OrderedCollection new.! !
+	observers := Set new.! !
 
 
 !CabinDoor methodsFor: 'actions' stamp: 'BAB 10/14/2017 20:13:22'!
