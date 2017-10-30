@@ -37,28 +37,52 @@ test03
 			self assert: anError messageText = aCartWithEmptyCatalogue itemDoesNotBelongToCatalogueMessage.
 			self assert: aCartWithEmptyCatalogue isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 10/28/2017 19:30:47'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 10/30/2017 16:53:22'!
 test04
-	|aBook aCart aCard aCardExpirationDate aCashier |
+	|aBook aCart aCard aCardExpirationDate aCashier aCurrentDate|
 	aBook := '1111'.
 	aCart := Cart withCatalogue: (Set with: aBook). 
 	aCardExpirationDate := GregorianMonthOfYear yearNumber: 2023 monthNumber: 10.
+	aCurrentDate := FixedGregorianDate  yearNumber: 2017 monthNumber: 10 dayNumber: 30.
 	aCard := Card withNumber: '01210' withExpirationDate: aCardExpirationDate withOwner: 'John Smith'.
-	aCashier := Cashier withPaymentProcessor: self.
+	aCashier := Cashier withPaymentProcessor: self onDate: aCurrentDate .
 	aCashier charge: aCard withCart: aCart.! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 10/30/2017 16:59:04'!
+test05
+	|aBook aCart aCard aCardExpirationDate aCashier aCurrentDate|
+	aBook := '1111'.
+	aCart := Cart withCatalogue: (Set with: aBook). 
+	aCardExpirationDate := GregorianMonthOfYear yearNumber: 2012 monthNumber: 10.
+	aCurrentDate := FixedGregorianDate  yearNumber: 2017 monthNumber: 10 dayNumber: 30.
+	aCard := Card withNumber: '01210' withExpirationDate: aCardExpirationDate withOwner: 'John Smith'.
+	aCashier := Cashier withPaymentProcessor: self onDate: aCurrentDate .
+	self 
+		should: [
+			aCashier charge: aCard withCart: aCart.
+			self fail] 
+		raise: Error
+		withExceptionDo: [:anError |
+			anError messageText = aCashier chargeWithExpiredCardMessage.
+		].! !
 
 
 !classDefinition: #Card category: #TusLibros!
 Object subclass: #Card
-	instanceVariableNames: 'creditCardNumber owner'
+	instanceVariableNames: 'creditCardNumber owner expirationDate'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Card methodsFor: 'as yet unclassified' stamp: 'BAB 10/28/2017 19:09:17'!
+!Card methodsFor: 'as yet unclassified' stamp: 'BAB 10/30/2017 17:01:30'!
+expirationDate
+	^ expirationDate.! !
+
+!Card methodsFor: 'as yet unclassified' stamp: 'BAB 10/30/2017 16:59:54'!
 initializeWithNumber: aCreditCardNumber withExpirationDate: anExpirationDate withOwner: anOwner 
 	creditCardNumber := aCreditCardNumber.
 	owner := anOwner.
+	expirationDate := anExpirationDate.
 	! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -115,6 +139,10 @@ itemDoesNotBelongToCatalogueMessage
 itemsCount
 	^ items size.! !
 
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 10/30/2017 16:48:54'!
+totalPrice
+	^ 0.! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #TusLibros!
@@ -128,18 +156,24 @@ withCatalogue: aCatalogue
 
 !classDefinition: #Cashier category: #TusLibros!
 Object subclass: #Cashier
-	instanceVariableNames: 'paymentProcessor'
+	instanceVariableNames: 'paymentProcessor currentDate'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cashier methodsFor: 'evaluating' stamp: 'BAB 10/28/2017 19:18:38'!
+!Cashier methodsFor: 'evaluating' stamp: 'BAB 10/30/2017 17:29:04'!
 charge: aCard withCart: aCart 
+	(currentDate < aCard expirationDate firstDate) ifFalse: [Error signal: self chargeWithExpiredCardMessage].
 	paymentProcessor debit: aCart totalPrice to: aCard.! !
 
-!Cashier methodsFor: 'evaluating' stamp: 'BAB 10/28/2017 19:15:56'!
-initializeWith: aPaymentProcessor
-	paymentProcessor :=  aPaymentProcessor .! !
+!Cashier methodsFor: 'evaluating' stamp: 'BAB 10/30/2017 17:29:56'!
+chargeWithExpiredCardMessage
+	'Credit Card is expired'.! !
+
+!Cashier methodsFor: 'evaluating' stamp: 'BAB 10/30/2017 17:19:01'!
+initializeWithPaymentProcessor: aPaymentProcessor onDate: aCurrentDate
+	paymentProcessor :=  aPaymentProcessor.
+	currentDate := aCurrentDate.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -147,6 +181,6 @@ initializeWith: aPaymentProcessor
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'evaluating' stamp: 'BAB 10/28/2017 19:16:22'!
-withPaymentProcessor: aPaymentProcessor 
-	^ self new initializeWith: aPaymentProcessor.! !
+!Cashier class methodsFor: 'evaluating' stamp: 'BAB 10/30/2017 17:19:21'!
+withPaymentProcessor: aPaymentProcessor onDate: aCurrentDate
+	^ self new initializeWithPaymentProcessor: aPaymentProcessor onDate: aCurrentDate.! !
