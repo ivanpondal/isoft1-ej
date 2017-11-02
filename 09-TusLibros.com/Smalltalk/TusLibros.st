@@ -5,12 +5,12 @@ TestCase subclass: #TusLibrosTest
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:28:37'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 17:59:35'!
 debit: anAmount from: aCard
-	blockOnDebit value: anAmount value: aCard.! !
+	^ blockOnDebit value: anAmount value: aCard.! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/2/2017 13:41:35'!
-test02
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:13:48'!
+test02CartWithOneCopyOfABookHasATotalWithItsPrice
 	| aCart aBook aCatalogue |
 	aBook := '1111'.
 	aCatalogue _ self aCatalogueWith: aBook.
@@ -20,10 +20,10 @@ test02
 	self assert: 1 equals: (aCart copiesOf: aBook).
 	self assert: 10 equals: aCart totalPrice! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:32:10'!
-test03
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:15:37'!
+test03CartCantAddBookNotBelongingToItsCatalogue
 	| aCartWithEmptyCatalogue aBook |
-	aCartWithEmptyCatalogue _ Cart withCatalogue: Set new.
+	aCartWithEmptyCatalogue _ Cart withCatalogue: self anEmptyCatalogue.
 	aBook _ '1111'.
 	self
 		should: [
@@ -32,18 +32,6 @@ test03
 		withExceptionDo: [ :anError |
 			self assert: anError messageText = aCartWithEmptyCatalogue itemDoesNotBelongToCatalogueMessage.
 			self assert: aCartWithEmptyCatalogue isEmpty ].! !
-
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 18:15:58'!
-test04
-	|aBook aCart aCard aCardExpirationDate aCashier aCurrentDate|
-	aBook := '1111'.
-	aCart := Cart withCatalogue: (Set with: aBook). 
-	aCardExpirationDate := GregorianMonthOfYear yearNumber: 2023 monthNumber: 10.
-	aCurrentDate := FixedGregorianDate  yearNumber: 2017 monthNumber: 10 dayNumber: 30.
-	aCard := Card withNumber: '01210' withExpirationDate: aCardExpirationDate withOwner: 'John Smith'.
-	
-	aCashier := Cashier withPaymentProcessor: self onDate: aCurrentDate .
-	aCashier charge: aCard withCart: aCart.! !
 
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:31:58'!
 test04CheckOutOfEmptyCartFails
@@ -65,24 +53,24 @@ test04CheckOutOfEmptyCartFails
 			self assert: anError messageText = aCashier cannotChargeEmptyCartErrorMessage.
 			self assert: aBookOfSales isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 19:15:26'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:18:12'!
 test05CheckOutWithOneBook
 	|aBook aCart aCashier aBookOfSales|
 	aBook := '1111'.
-	aCart := Cart withCatalogue: (Set with: aBook). 
+	aCart := Cart withCatalogue: (self aCatalogueWith: aBook). 
 	aCart add: aBook.
 	aBookOfSales := OrderedCollection new.
 	aCashier := Cashier withPaymentProcessor: self withBookOfSales: aBookOfSales.
 	aCashier charge: (self validCard) withCart: aCart onDate: self todayDate.
 	self deny: aBookOfSales isEmpty.! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:31:42'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:21:24'!
 test06ChargeWithExpiredCardFails
 	| aCart aCard aCardExpirationDate aCashier aSalesBook aBook |
 	blockOnDebit _ [ Error signal: 'Merchant Processor: credit card is expired' ].
 	
 	aBook _ 'a book'.
-	aCart _ Cart withCatalogue: (Set with: 'a book').
+	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
 	aCart add: aBook.
 	aSalesBook _ OrderedCollection new.
 	aCardExpirationDate _ GregorianMonthOfYear
@@ -101,12 +89,12 @@ test06ChargeWithExpiredCardFails
 			self assert: aCashier chargeWithExpiredCardErrorMessage equals: anError messageText.
 			self assert: aSalesBook isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:47:30'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:21:43'!
 test07ChargeWithStolenCardFails
 	| aCart aCard aCashier aSalesBook aBook creditCardIsStolenErrorMessage |
 	
 	aBook _ 'a book'.
-	aCart _ Cart withCatalogue: (Set with: 'a book').
+	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
 	aCart add: aBook.
 	aSalesBook _ OrderedCollection new.
 	aCard _ self validCard.
@@ -124,12 +112,12 @@ test07ChargeWithStolenCardFails
 			self assert: creditCardIsStolenErrorMessage equals: anError messageText.
 			self assert: aSalesBook isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:49:43'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:22:05'!
 test08ChargeWithNoCreditCardFails
 	| aCart aCard aCashier aSalesBook aBook creditCardIsInRedErrorMessage |
 	
 	aBook _ 'a book'.
-	aCart _ Cart withCatalogue: (Set with: 'a book').
+	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
 	aCart add: aBook.
 	aSalesBook _ OrderedCollection new.
 	aCard _ self validCard.
@@ -147,20 +135,20 @@ test08ChargeWithNoCreditCardFails
 			self assert: creditCardIsInRedErrorMessage equals: anError messageText.
 			self assert: aSalesBook isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:52:05'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 17:55:13'!
 test09ChargeWithValidCreditCardSucceeds
-	| aCart aCard aCashier aSalesBook aBook |
+	| aCart aCard aCashier aSalesBook aBook aTransactionId |
 	
 	aBook _ 'a book'.
-	aCart _ Cart withCatalogue: (Set with: 'a book').
+	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
 	aCart add: aBook.
 	aSalesBook _ OrderedCollection new.
 	aCard _ self validCard.
 	aCashier _ Cashier withPaymentProcessor: self withBookOfSales: aSalesBook.
-	
-	blockOnDebit _ [ :anAmount :aCardToDebitFrom | ].
+	aTransactionId _ '1234'.
+	blockOnDebit _ [ :anAmount :aCardToDebitFrom | aCard = aCardToDebitFrom ifTrue: [ aTransactionId ] ].
 
-	aCashier charge: aCard withCart: aCart onDate: self todayDate.
+	self assert: aTransactionId  equals: (aCashier charge: aCard withCart: aCart onDate: self todayDate).
 	self deny: aSalesBook isEmpty.! !
 
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:24:33'!
@@ -171,6 +159,14 @@ todayDate
 !TusLibrosTest methodsFor: 'accessing' stamp: 'ip 11/2/2017 13:41:19'!
 aCatalogueWith: aString 
 	^ Dictionary newFromPairs: { aString . 10 }! !
+
+!TusLibrosTest methodsFor: 'accessing' stamp: 'asdf 11/2/2017 18:15:19'!
+anEmptyCatalogue
+	^ Dictionary new! !
+
+!TusLibrosTest methodsFor: 'accessing' stamp: 'asdf 11/2/2017 18:20:59'!
+setUp
+	blockOnDebit _ [ :anAmount :aCardToDebitFrom | 0 ].! !
 
 !TusLibrosTest methodsFor: 'accessing' stamp: 'asdf 10/30/2017 21:35:06'!
 validCard
@@ -274,14 +270,16 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cashier methodsFor: 'evaluating' stamp: 'asdf 10/30/2017 21:47:44'!
+!Cashier methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 17:51:43'!
 charge: aCard withCart: aCart onDate: aFixedDate
+	| transactionId |
 	aCart isEmpty ifTrue: [ Error signal: self cannotChargeEmptyCartErrorMessage ].
 	aFixedDate < aCard expirationDate firstDate ifFalse: [ Error signal: self chargeWithExpiredCardErrorMessage ].
-	paymentProcessor
+	transactionId _ paymentProcessor
 		debit: aCart totalPrice
 		from: aCard.
-	bookOfSales add: ''.! !
+	bookOfSales add: ''.
+	^ transactionId! !
 
 !Cashier methodsFor: 'evaluating' stamp: 'asdf 10/30/2017 21:16:10'!
 chargeWithExpiredCardErrorMessage
@@ -308,6 +306,7 @@ cannotChargeEmptyCartErrorMessage
 !classDefinition: 'Cashier class' category: #TusLibros!
 Cashier class
 	instanceVariableNames: ''!
+
 
 !Cashier class methodsFor: 'initialization' stamp: 'asdf 10/30/2017 19:00:33'!
 withPaymentProcessor: aTusLibrosTest withBookOfSales: anOrderedCollection 
