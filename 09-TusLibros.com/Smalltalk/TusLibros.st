@@ -9,14 +9,16 @@ TestCase subclass: #TusLibrosTest
 debit: anAmount from: aCard
 	blockOnDebit value: anAmount value: aCard.! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 10/28/2017 18:16:54'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/2/2017 13:41:35'!
 test02
-	| aCart aBook |
+	| aCart aBook aCatalogue |
 	aBook := '1111'.
-	aCart := Cart withCatalogue: (Set with: aBook  ).
+	aCatalogue _ self aCatalogueWith: aBook.
+	aCart := Cart withCatalogue: aCatalogue.
 	aCart add: 1 copiesOf: aBook.
 	
-	self assert: (aCart copiesOf: aBook) = 1.! !
+	self assert: 1 equals: (aCart copiesOf: aBook).
+	self assert: 10 equals: aCart totalPrice! !
 
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:32:10'!
 test03
@@ -166,6 +168,10 @@ todayDate
 	^  (FixedGregorianDate yearNumber: 2017 monthNumber: 2 dayNumber: 12).! !
 
 
+!TusLibrosTest methodsFor: 'accessing' stamp: 'ip 11/2/2017 13:41:19'!
+aCatalogueWith: aString 
+	^ Dictionary newFromPairs: { aString . 10 }! !
+
 !TusLibrosTest methodsFor: 'accessing' stamp: 'asdf 10/30/2017 21:35:06'!
 validCard
 	^ Card
@@ -210,10 +216,10 @@ Object subclass: #Cart
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 10/28/2017 18:20:23'!
+!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/2/2017 13:37:16'!
 add: anItem
 	| prevQuantityOfItem |
-	(catalogue includes: anItem) ifFalse: [ Error signal: self itemDoesNotBelongToCatalogueMessage ].
+	(catalogue includesKey: anItem) ifFalse: [ Error signal: self itemDoesNotBelongToCatalogueMessage ].
 	prevQuantityOfItem _ items
 		at: anItem
 		ifAbsent: 0.
@@ -246,9 +252,9 @@ itemDoesNotBelongToCatalogueMessage
 itemsCount
 	^ items size.! !
 
-!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 10/30/2017 16:48:54'!
+!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/2/2017 13:51:42'!
 totalPrice
-	^ 0.! !
+	^ items keys inject: 0 into: [ :subTotal :item | (catalogue at: item) * (items at: item) + subTotal ] ! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
@@ -302,7 +308,6 @@ cannotChargeEmptyCartErrorMessage
 !classDefinition: 'Cashier class' category: #TusLibros!
 Cashier class
 	instanceVariableNames: ''!
-
 
 !Cashier class methodsFor: 'initialization' stamp: 'asdf 10/30/2017 19:00:33'!
 withPaymentProcessor: aTusLibrosTest withBookOfSales: anOrderedCollection 
