@@ -5,10 +5,4 @@ CreditCard creation
 Cart
  - Cannot use rational values when adding to cart
  - Cannot use negative values when adding to cart
-
-Cashier
- - Stolen Card, there is communication with MP
- - Card with no credit, there is is communication with MP
- - Transaction goes ok, there is communication with MP
- - Expired credit card, there is no communication with MP
-
+ - Can add several copies of the same book

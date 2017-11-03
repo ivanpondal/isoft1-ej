@@ -64,10 +64,10 @@ test05CheckOutWithOneBook
 	aCashier charge: (self validCard) withCart: aCart onDate: self todayDate.
 	self deny: aBookOfSales isEmpty.! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:21:24'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 18:47:37'!
 test06ChargeWithExpiredCardFails
 	| aCart aCard aCardExpirationDate aCashier aSalesBook aBook |
-	blockOnDebit _ [ Error signal: 'Merchant Processor: credit card is expired' ].
+	blockOnDebit _ [ self fail ].
 	
 	aBook _ 'a book'.
 	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
@@ -151,6 +151,64 @@ test09ChargeWithValidCreditCardSucceeds
 	self assert: aTransactionId  equals: (aCashier charge: aCard withCart: aCart onDate: self todayDate).
 	self deny: aSalesBook isEmpty.! !
 
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:20:01'!
+test10FailToCreateCartWithInvalidClient
+	| aCartInterface anInvalidClientPassword anInvalidClient |
+	aCartInterface _ CartInterface withClientsRepository: (self aClientsRepositoryWithUser: 'asdf' andPassword: 'admin123').
+	anInvalidClient _ 'pepito'.
+	anInvalidClientPassword _ '1234'.
+	
+	self should: [ aCartInterface createCartForClient: anInvalidClient withPassword: anInvalidClientPassword ]
+		raise: Error -MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: aCartInterface invalidClientErrorMessage equals: anError messageText
+		]! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:10:30'!
+test11FailToCreateCartWithIncorrectAuthentication
+	| aCartInterface anIncorrectClientPassword aClient |
+	aClient _ 'pepito'.
+	aCartInterface _ CartInterface withClientsRepository: (self aClientsRepositoryWithUser: aClient andPassword: 'fome').
+	anIncorrectClientPassword _ 'nomeacuerdocomoera'.
+	
+	self should: [ aCartInterface createCartForClient: aClient withPassword: anIncorrectClientPassword ]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: aCartInterface incorrectAuthenticationErrorMessage equals: anError messageText
+		]! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:24:15'!
+test12CreatedCartWithCorrectlyAuthenticatedClientShouldBeEmpty
+	| aCartInterface aClientPassword aClient aCreatedCartId |
+	aClient _ 'pepito'.
+	aClientPassword _ 'ahorasi'.
+	aCartInterface _ CartInterface withClientsRepository:
+		(self
+			aClientsRepositoryWithUser: aClient
+			andPassword: aClientPassword).
+
+	aCreatedCartId _ aCartInterface createCartForClient: aClient withPassword: aClientPassword.
+	self assert: (aCartInterface listCart: aCreatedCartId) isEmpty.
+		! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:43:40'!
+test13BookAddedToCartShouldAppearListed
+	| aCartInterface aClientPassword aClient aCreatedCartId anItemsSummary |
+	aClient _ 'pepito'.
+	aClientPassword _ 'ahorasi'.
+	aCartInterface _ CartInterface withClientsRepository:
+		(self
+			aClientsRepositoryWithUser: aClient
+			andPassword: aClientPassword).
+
+	aCreatedCartId _ aCartInterface createCartForClient: aClient withPassword: aClientPassword.
+	aCartInterface add: 2 copiesOf: 'aBook' toCartWithId: aCreatedCartId.
+	
+	anItemsSummary _ aCartInterface listCart: aCreatedCartId.
+	self assert: 1 equals: anItemsSummary size.
+	self assert: 2 equals: (anItemsSummary at: 'aBook')
+		! !
+
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:24:33'!
 todayDate
 	^  (FixedGregorianDate yearNumber: 2017 monthNumber: 2 dayNumber: 12).! !
@@ -159,6 +217,10 @@ todayDate
 !TusLibrosTest methodsFor: 'accessing' stamp: 'ip 11/2/2017 13:41:19'!
 aCatalogueWith: aString 
 	^ Dictionary newFromPairs: { aString . 10 }! !
+
+!TusLibrosTest methodsFor: 'accessing' stamp: 'asdf 11/2/2017 20:12:20'!
+aClientsRepositoryWithUser: aClient andPassword: aPassword 
+	^ Dictionary newFromPairs: { aClient. aPassword }.! !
 
 !TusLibrosTest methodsFor: 'accessing' stamp: 'asdf 11/2/2017 18:15:19'!
 anEmptyCatalogue
@@ -252,6 +314,11 @@ itemsCount
 totalPrice
 	^ items keys inject: 0 into: [ :subTotal :item | (catalogue at: item) * (items at: item) + subTotal ] ! !
 
+
+!Cart methodsFor: 'accessing' stamp: 'asdf 11/2/2017 21:02:16'!
+itemsDo: aBlock
+	items keysAndValuesDo: aBlock! !
+
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #TusLibros!
@@ -261,6 +328,62 @@ Cart class
 !Cart class methodsFor: 'as yet unclassified' stamp: 'BAB 10/26/2017 20:33:03'!
 withCatalogue: aCatalogue
 	^ self new initializeWithCatalogue: aCatalogue .! !
+
+
+!classDefinition: #CartInterface category: #TusLibros!
+Object subclass: #CartInterface
+	instanceVariableNames: 'clientsRepository catalogue cart'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!CartInterface methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 20:46:55'!
+add: anAmount copiesOf: aBook toCartWithId: aCartId 
+	| aCart |
+	aCart _ self cartWithId: aCartId.
+	aCart add: anAmount copiesOf: aBook. ! !
+
+!CartInterface methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 21:04:57'!
+createCartForClient: aClient withPassword: aPassword
+	(clientsRepository includesKey: aClient) ifFalse: [ Error signal: self invalidClientErrorMessage ].
+	(clientsRepository at: aClient) = aPassword ifFalse: [ Error signal: self incorrectAuthenticationErrorMessage ].
+	cart _ Cart withCatalogue: catalogue.
+	^ '0'! !
+
+!CartInterface methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 21:00:20'!
+listCart: aCartId 
+	| anItemsSummary |
+	anItemsSummary _ Dictionary new.
+	(self cartWithId: aCartId) itemsDo: [ :aBook :aQuantity | anItemsSummary at: aBook put: aQuantity].
+	^ anItemsSummary! !
+
+
+!CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 21:04:43'!
+cartWithId: aCartId
+	^ cart! !
+
+!CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:02:18'!
+incorrectAuthenticationErrorMessage
+	^ 'Failed to authenticate'! !
+
+!CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:50:37'!
+initializeWithClientsRepository: aClientsRepository 
+	clientsRepository _ aClientsRepository.
+	catalogue _ Dictionary newFromPairs: { 'aBook'. 100 }! !
+
+!CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 19:56:30'!
+invalidClientErrorMessage
+	^ 'Invalid client'! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'CartInterface class' category: #TusLibros!
+CartInterface class
+	instanceVariableNames: ''!
+
+!CartInterface class methodsFor: 'initialization' stamp: 'asdf 11/2/2017 20:17:01'!
+withClientsRepository: aClientsRepository 
+	^ self new initializeWithClientsRepository: aClientsRepository.! !
 
 
 !classDefinition: #Cashier category: #TusLibros!
