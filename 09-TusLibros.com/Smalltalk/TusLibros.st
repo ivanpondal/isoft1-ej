@@ -151,10 +151,10 @@ test09ChargeWithValidCreditCardSucceeds
 	self assert: aTransactionId  equals: (aCashier charge: aCard withCart: aCart onDate: self todayDate).
 	self deny: aSalesBook isEmpty.! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:20:01'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:07:32'!
 test10FailToCreateCartWithInvalidClient
 	| aCartInterface anInvalidClientPassword anInvalidClient |
-	aCartInterface _ CartInterface withClientsRepository: (self aClientsRepositoryWithUser: 'asdf' andPassword: 'admin123').
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: 'asdf' andPassword: 'admin1234'.
 	anInvalidClient _ 'pepito'.
 	anInvalidClientPassword _ '1234'.
 	
@@ -164,11 +164,11 @@ test10FailToCreateCartWithInvalidClient
 			self assert: aCartInterface invalidClientErrorMessage equals: anError messageText
 		]! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:10:30'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:09:10'!
 test11FailToCreateCartWithIncorrectAuthentication
 	| aCartInterface anIncorrectClientPassword aClient |
 	aClient _ 'pepito'.
-	aCartInterface _ CartInterface withClientsRepository: (self aClientsRepositoryWithUser: aClient andPassword: 'fome').
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: aClient andPassword: 'fome'.
 	anIncorrectClientPassword _ 'nomeacuerdocomoera'.
 	
 	self should: [ aCartInterface createCartForClient: aClient withPassword: anIncorrectClientPassword ]
@@ -177,29 +177,23 @@ test11FailToCreateCartWithIncorrectAuthentication
 			self assert: aCartInterface incorrectAuthenticationErrorMessage equals: anError messageText
 		]! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:24:15'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:10:02'!
 test12CreatedCartWithCorrectlyAuthenticatedClientShouldBeEmpty
 	| aCartInterface aClientPassword aClient aCreatedCartId |
 	aClient _ 'pepito'.
 	aClientPassword _ 'ahorasi'.
-	aCartInterface _ CartInterface withClientsRepository:
-		(self
-			aClientsRepositoryWithUser: aClient
-			andPassword: aClientPassword).
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: aClient andPassword: aClientPassword.
 
 	aCreatedCartId _ aCartInterface createCartForClient: aClient withPassword: aClientPassword.
 	self assert: (aCartInterface listCart: aCreatedCartId) isEmpty.
 		! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:43:40'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:10:28'!
 test13BookAddedToCartShouldAppearListed
 	| aCartInterface aClientPassword aClient aCreatedCartId anItemsSummary |
 	aClient _ 'pepito'.
 	aClientPassword _ 'ahorasi'.
-	aCartInterface _ CartInterface withClientsRepository:
-		(self
-			aClientsRepositoryWithUser: aClient
-			andPassword: aClientPassword).
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: aClient andPassword: aClientPassword.
 
 	aCreatedCartId _ aCartInterface createCartForClient: aClient withPassword: aClientPassword.
 	aCartInterface add: 2 copiesOf: 'aBook' toCartWithId: aCreatedCartId.
@@ -209,10 +203,111 @@ test13BookAddedToCartShouldAppearListed
 	self assert: 2 equals: (anItemsSummary at: 'aBook')
 		! !
 
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:10:51'!
+test14TwoDifferentCartsShouldHaveTheirOwnListing
+	| aCartInterface aClient aClientPassword aNonEmptyCartId anEmptyCartId |
+	
+	aClient _ 'pepito'.
+	aClientPassword _ 'ahorasi'.
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: aClient andPassword: aClientPassword.
+	
+	aNonEmptyCartId _ aCartInterface createCartForClient: aClient withPassword: aClientPassword.
+	aCartInterface add: 2 copiesOf: 'aBook' toCartWithId: aNonEmptyCartId.
+	
+	anEmptyCartId _ aCartInterface createCartForClient: aClient withPassword: aClientPassword.
+
+	self assert: (aCartInterface listCart: aNonEmptyCartId) isEmpty not.
+	self assert: (aCartInterface listCart: anEmptyCartId) isEmpty.
+
+	! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:11:03'!
+test15FailToListPurchasesWithInvalidClient
+	| aCartInterface anInvalidClientPassword anInvalidClient |
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: 'asdf' andPassword: 'admin1234'.
+	anInvalidClient _ 'pepito'.
+	anInvalidClientPassword _ '1234'.
+	
+	self should: [ aCartInterface listPurchasesForClient: anInvalidClient withPassword: anInvalidClientPassword ]
+		raise: Error -MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: aCartInterface invalidClientErrorMessage equals: anError messageText
+		]! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:11:37'!
+test16FailToListPurchasesWithIncorrectAuthentication
+	| aCartInterface anIncorrectClientPassword aClient |
+	aClient _ 'pepito'.
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: aClient andPassword: 'fome'.
+
+	anIncorrectClientPassword _ 'nomeacuerdocomoera'.
+	self
+		should: [
+			aCartInterface
+				listPurchasesForClient: aClient
+				withPassword: anIncorrectClientPassword ]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self
+				assert: aCartInterface incorrectAuthenticationErrorMessage
+				equals: anError messageText ].! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 19:18:48'!
+test17ListPurchasesBeforeCheckoutShouldBeEmpty
+	| aCartInterface aClientPassword aClient aPurchasesList |
+	aClient _ 'pepito'.
+	aClientPassword _ 'ahorasi'.
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: aClient andPassword: aClientPassword.
+
+	aPurchasesList _ aCartInterface listPurchasesForClient: aClient withPassword: aClientPassword.
+	self assert: aPurchasesList isEmpty.
+		! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ivan 11/4/2017 20:25:28'!
+test18ListPurchasesAfterCheckoutOfACartListsItsContents
+	| aCartInterface aClientPassword aClient aPurchasesList aCreatedCartId |
+	aClient _ 'pepito'.
+	aClientPassword _ 'ahorasi'.
+	aCartInterface _ self
+		aCartInterfaceWithRegisteredClient: aClient
+		andPassword: aClientPassword.
+	aCreatedCartId _ aCartInterface
+		createCartForClient: aClient
+		withPassword: aClientPassword.
+	aCartInterface
+		add: 1
+		copiesOf: 'aBook'
+		toCartWithId: aCreatedCartId.
+	aCartInterface
+		checkoutCartWithId: aCreatedCartId
+		usingCardNumber: '22222222'
+		withExpirationDate:
+			(GregorianMonthOfYear
+				yearNumber: 2022
+				monthNumber: 2)
+		withCardOwnerName: 'pepe'
+		onDate: self todayDate.
+	aPurchasesList _ aCartInterface
+		listPurchasesForClient: aClient
+		withPassword: aClientPassword.
+	self deny: aPurchasesList isEmpty.
+	self
+		assert: 1
+		equals: (aPurchasesList quantityOf: 'aBook').! !
+
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:24:33'!
 todayDate
 	^  (FixedGregorianDate yearNumber: 2017 monthNumber: 2 dayNumber: 12).! !
 
+
+!TusLibrosTest methodsFor: 'accessing' stamp: 'ivan 11/4/2017 20:23:43'!
+aCartInterfaceWithRegisteredClient: aClient andPassword: aPassword
+	^ CartInterface withRegisteredClients:
+		(self
+			aClientsRepositoryWithUser: aClient
+			andPassword: aPassword)
+		withCashier: (Cashier withPaymentProcessor: self withBookOfSales: OrderedCollection new)
+		withCatalogue: (Dictionary newFromPairs: {'aBook'. 100}).! !
 
 !TusLibrosTest methodsFor: 'accessing' stamp: 'ip 11/2/2017 13:41:19'!
 aCatalogueWith: aString 
@@ -332,7 +427,7 @@ withCatalogue: aCatalogue
 
 !classDefinition: #CartInterface category: #TusLibros!
 Object subclass: #CartInterface
-	instanceVariableNames: 'clientsRepository catalogue cart'
+	instanceVariableNames: 'catalogue cartsRepository registeredClients cashier'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
@@ -343,12 +438,28 @@ add: anAmount copiesOf: aBook toCartWithId: aCartId
 	aCart _ self cartWithId: aCartId.
 	aCart add: anAmount copiesOf: aBook. ! !
 
-!CartInterface methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 21:04:57'!
+!CartInterface methodsFor: 'evaluating' stamp: 'ip 11/4/2017 19:12:57'!
+authenticateClient: aClient withPassword: aPassword
+	(registeredClients includesKey: aClient) ifFalse: [ Error signal: self invalidClientErrorMessage ].
+	(registeredClients at: aClient) = aPassword ifFalse: [ Error signal: self incorrectAuthenticationErrorMessage ].! !
+
+!CartInterface methodsFor: 'evaluating' stamp: 'ivan 11/4/2017 20:26:37'!
+checkoutCartWithId: aCartId usingCardNumber: aCardNumber withExpirationDate: anExpirationDate withCardOwnerName: aCardOwnerName onDate: aDate 
+	| aCart aCard |
+	aCard _ Card withNumber: aCardNumber withExpirationDate: anExpirationDate withOwner: aCardOwnerName .
+	aCart _ (self cartWithId: aCartId).
+	cashier charge: aCard withCart:  (self cartWithId: aCartId) onDate: aDate.
+	! !
+
+!CartInterface methodsFor: 'evaluating' stamp: 'ip 11/4/2017 18:52:25'!
 createCartForClient: aClient withPassword: aPassword
-	(clientsRepository includesKey: aClient) ifFalse: [ Error signal: self invalidClientErrorMessage ].
-	(clientsRepository at: aClient) = aPassword ifFalse: [ Error signal: self incorrectAuthenticationErrorMessage ].
-	cart _ Cart withCatalogue: catalogue.
-	^ '0'! !
+	| aCreatedCart aCreatedCartId |
+
+	self authenticateClient: aClient withPassword: aPassword.
+	aCreatedCart _ Cart withCatalogue: catalogue.
+	aCreatedCartId _ aCreatedCart hash.
+	cartsRepository at: aCreatedCartId put: aCreatedCart.
+	^ aCreatedCartId! !
 
 !CartInterface methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 21:00:20'!
 listCart: aCartId 
@@ -357,19 +468,26 @@ listCart: aCartId
 	(self cartWithId: aCartId) itemsDo: [ :aBook :aQuantity | anItemsSummary at: aBook put: aQuantity].
 	^ anItemsSummary! !
 
+!CartInterface methodsFor: 'evaluating' stamp: 'ip 11/4/2017 19:19:24'!
+listPurchasesForClient: aClient withPassword: aPassword 
+	self authenticateClient: aClient withPassword: aPassword.
+	^ OrderedCollection new.! !
 
-!CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 21:04:43'!
+
+!CartInterface methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 18:34:00'!
 cartWithId: aCartId
-	^ cart! !
+	^ cartsRepository at: aCartId! !
 
 !CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:02:18'!
 incorrectAuthenticationErrorMessage
 	^ 'Failed to authenticate'! !
 
-!CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:50:37'!
-initializeWithClientsRepository: aClientsRepository 
-	clientsRepository _ aClientsRepository.
-	catalogue _ Dictionary newFromPairs: { 'aBook'. 100 }! !
+!CartInterface methodsFor: 'as yet unclassified' stamp: 'ivan 11/4/2017 20:21:52'!
+initializeWithRegisteredClients: someRegisteredClients withCashier: aCashier withCatalogue: aCatalogue
+	registeredClients _ someRegisteredClients .
+	cashier _ aCashier.
+	cartsRepository _ Dictionary new.
+	catalogue _ aCatalogue.! !
 
 !CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 19:56:30'!
 invalidClientErrorMessage
@@ -381,9 +499,9 @@ invalidClientErrorMessage
 CartInterface class
 	instanceVariableNames: ''!
 
-!CartInterface class methodsFor: 'initialization' stamp: 'asdf 11/2/2017 20:17:01'!
-withClientsRepository: aClientsRepository 
-	^ self new initializeWithClientsRepository: aClientsRepository.! !
+!CartInterface class methodsFor: 'initialization' stamp: 'ivan 11/4/2017 20:20:49'!
+withRegisteredClients: someRegisteredClients withCashier: aCashier withCatalogue: aCatalogue 
+	^ self new initializeWithRegisteredClients:  someRegisteredClients withCashier: aCashier withCatalogue: aCatalogue.! !
 
 
 !classDefinition: #Cashier category: #TusLibros!
@@ -429,7 +547,6 @@ cannotChargeEmptyCartErrorMessage
 !classDefinition: 'Cashier class' category: #TusLibros!
 Cashier class
 	instanceVariableNames: ''!
-
 
 !Cashier class methodsFor: 'initialization' stamp: 'asdf 10/30/2017 19:00:33'!
 withPaymentProcessor: aTusLibrosTest withBookOfSales: anOrderedCollection 
