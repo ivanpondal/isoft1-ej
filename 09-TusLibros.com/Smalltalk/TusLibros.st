@@ -1,6 +1,6 @@
 !classDefinition: #TusLibrosTest category: #TusLibros!
 TestCase subclass: #TusLibrosTest
-	instanceVariableNames: 'blockOnDebit'
+	instanceVariableNames: 'blockOnDebit currentTestTime'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
@@ -295,19 +295,38 @@ test18ListPurchasesAfterCheckoutOfACartListsItsContents
 		assert: 1
 		equals: (aPurchasesList quantityOf: 'aBook').! !
 
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 17:15:01'!
+test19ListCartShouldFailAfterSessionTimePassed
+	| aCartInterface aClientPassword aClient aCreatedCartId |
+	aClient _ 'pepito'.
+	aClientPassword _ 'ahorasi'.
+	aCartInterface _ self aCartInterfaceWithRegisteredClient: aClient andPassword: aClientPassword.
+
+	aCreatedCartId _ aCartInterface createCartForClient: aClient withPassword: aClientPassword.
+	
+	self advanceTime: CartInterface cartSessionExpirationTime.
+	
+	self should: [ aCartInterface listCart: aCreatedCartId]
+	raise: Error - MessageNotUnderstood 
+	withExceptionDo: [:anError |
+		self assert: Session expiratedSessionErrorMessage 
+		equals: anError messageText.
+	]! !
+
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:24:33'!
 todayDate
 	^  (FixedGregorianDate yearNumber: 2017 monthNumber: 2 dayNumber: 12).! !
 
 
-!TusLibrosTest methodsFor: 'accessing' stamp: 'ivan 11/4/2017 20:23:43'!
+!TusLibrosTest methodsFor: 'accessing' stamp: 'BAB 11/5/2017 16:04:55'!
 aCartInterfaceWithRegisteredClient: aClient andPassword: aPassword
 	^ CartInterface withRegisteredClients:
 		(self
 			aClientsRepositoryWithUser: aClient
 			andPassword: aPassword)
-		withCashier: (Cashier withPaymentProcessor: self withBookOfSales: OrderedCollection new)
-		withCatalogue: (Dictionary newFromPairs: {'aBook'. 100}).! !
+		withCatalogue: (Dictionary newFromPairs: {'aBook'. 100})
+		withPaymentProcessor: self withSalesBook: (OrderedCollection new).
+		! !
 
 !TusLibrosTest methodsFor: 'accessing' stamp: 'ip 11/2/2017 13:41:19'!
 aCatalogueWith: aString 
@@ -331,6 +350,14 @@ validCard
 		withNumber: '01210'
 		withExpirationDate: (GregorianMonthOfYear yearNumber: 2022 monthNumber: 1)
 		withOwner: 'John Smith'.! !
+
+
+!TusLibrosTest methodsFor: 'evaluating' stamp: 'BAB 11/5/2017 17:20:06'!
+advanceTime: aDuration! !
+
+!TusLibrosTest methodsFor: 'evaluating' stamp: 'BAB 11/5/2017 17:38:09'!
+now
+	^ currentTestTime.! !
 
 
 !classDefinition: #Card category: #TusLibros!
@@ -405,6 +432,13 @@ itemDoesNotBelongToCatalogueMessage
 itemsCount
 	^ items size.! !
 
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 15:56:02'!
+itemsSummary
+	| anItemsSummary |
+	anItemsSummary _ Dictionary new.
+	self itemsDo: [ :aBook :aQuantity | anItemsSummary at: aBook put: aQuantity].
+	^ anItemsSummary.! !
+
 !Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/2/2017 13:51:42'!
 totalPrice
 	^ items keys inject: 0 into: [ :subTotal :item | (catalogue at: item) * (items at: item) + subTotal ] ! !
@@ -427,7 +461,7 @@ withCatalogue: aCatalogue
 
 !classDefinition: #CartInterface category: #TusLibros!
 Object subclass: #CartInterface
-	instanceVariableNames: 'catalogue cartsRepository registeredClients cashier'
+	instanceVariableNames: 'catalogue cartsRepository registeredClients cashier salesBook paymentProcessor'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
@@ -451,14 +485,15 @@ checkoutCartWithId: aCartId usingCardNumber: aCardNumber withExpirationDate: anE
 	cashier charge: aCard withCart:  (self cartWithId: aCartId) onDate: aDate.
 	! !
 
-!CartInterface methodsFor: 'evaluating' stamp: 'ip 11/4/2017 18:52:25'!
+!CartInterface methodsFor: 'evaluating' stamp: 'BAB 11/5/2017 18:23:25'!
 createCartForClient: aClient withPassword: aPassword
-	| aCreatedCart aCreatedCartId |
+	| aCreatedCart aCreatedCartId aCartSession |
 
 	self authenticateClient: aClient withPassword: aPassword.
-	aCreatedCart _ Cart withCatalogue: catalogue.
-	aCreatedCartId _ aCreatedCart hash.
-	cartsRepository at: aCreatedCartId put: aCreatedCart.
+	aCreatedCart _ Cart withCatalogue: catalogue .
+	aCartSession _ Session of: aCreatedCart withClock: paymentProcessor for: (self class cartSessionExpirationTime).
+	aCreatedCartId _ aCartSession hash.
+	cartsRepository at: aCreatedCartId put: aCartSession.
 	^ aCreatedCartId! !
 
 !CartInterface methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 21:00:20'!
@@ -468,10 +503,10 @@ listCart: aCartId
 	(self cartWithId: aCartId) itemsDo: [ :aBook :aQuantity | anItemsSummary at: aBook put: aQuantity].
 	^ anItemsSummary! !
 
-!CartInterface methodsFor: 'evaluating' stamp: 'ip 11/4/2017 19:19:24'!
+!CartInterface methodsFor: 'evaluating' stamp: 'BAB 11/5/2017 16:10:38'!
 listPurchasesForClient: aClient withPassword: aPassword 
 	self authenticateClient: aClient withPassword: aPassword.
-	^ OrderedCollection new.! !
+	^ PurchasesDetail withSales: salesBook.! !
 
 
 !CartInterface methodsFor: 'as yet unclassified' stamp: 'ip 11/4/2017 18:34:00'!
@@ -482,12 +517,14 @@ cartWithId: aCartId
 incorrectAuthenticationErrorMessage
 	^ 'Failed to authenticate'! !
 
-!CartInterface methodsFor: 'as yet unclassified' stamp: 'ivan 11/4/2017 20:21:52'!
-initializeWithRegisteredClients: someRegisteredClients withCashier: aCashier withCatalogue: aCatalogue
-	registeredClients _ someRegisteredClients .
-	cashier _ aCashier.
-	cartsRepository _ Dictionary new.
-	catalogue _ aCatalogue.! !
+!CartInterface methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 16:55:36'!
+initializeWithRegisteredClients: someRegisteredClients withCatalogue: aCatalogue withPaymentProcessor: aPaymentProcessor withSalesBook: aSalesBook 
+	registeredClients _ someRegisteredClients.
+	catalogue _ aCatalogue.
+	paymentProcessor _ aPaymentProcessor .
+	salesBook _ aSalesBook .
+	cartsRepository  _ Dictionary new.
+	cashier _  Cashier withPaymentProcessor: aPaymentProcessor withBookOfSales: aSalesBook .! !
 
 !CartInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 19:56:30'!
 invalidClientErrorMessage
@@ -499,19 +536,23 @@ invalidClientErrorMessage
 CartInterface class
 	instanceVariableNames: ''!
 
-!CartInterface class methodsFor: 'initialization' stamp: 'ivan 11/4/2017 20:20:49'!
-withRegisteredClients: someRegisteredClients withCashier: aCashier withCatalogue: aCatalogue 
-	^ self new initializeWithRegisteredClients:  someRegisteredClients withCashier: aCashier withCatalogue: aCatalogue.! !
+!CartInterface class methodsFor: 'initialization' stamp: 'BAB 11/5/2017 17:15:13'!
+cartSessionExpirationTime
+	^ 30 minutes.! !
+
+!CartInterface class methodsFor: 'initialization' stamp: 'BAB 11/5/2017 16:55:28'!
+withRegisteredClients: someRegisteredClients withCatalogue: aCatalogue withPaymentProcessor: aPaymentProcessor withSalesBook: aSalesBook
+	^ self new initializeWithRegisteredClients:  someRegisteredClients withCatalogue: aCatalogue withPaymentProcessor: aPaymentProcessor withSalesBook: aSalesBook.! !
 
 
 !classDefinition: #Cashier category: #TusLibros!
 Object subclass: #Cashier
-	instanceVariableNames: 'paymentProcessor currentDate bookOfSales'
+	instanceVariableNames: 'paymentProcessor bookOfSales'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cashier methodsFor: 'evaluating' stamp: 'asdf 11/2/2017 17:51:43'!
+!Cashier methodsFor: 'evaluating' stamp: 'BAB 11/5/2017 15:56:20'!
 charge: aCard withCart: aCart onDate: aFixedDate
 	| transactionId |
 	aCart isEmpty ifTrue: [ Error signal: self cannotChargeEmptyCartErrorMessage ].
@@ -519,23 +560,17 @@ charge: aCard withCart: aCart onDate: aFixedDate
 	transactionId _ paymentProcessor
 		debit: aCart totalPrice
 		from: aCard.
-	bookOfSales add: ''.
+	bookOfSales add: (Sale of: (aCart itemsSummary) withCard: aCard withTotalAmount: aCart totalPrice).
 	^ transactionId! !
 
 !Cashier methodsFor: 'evaluating' stamp: 'asdf 10/30/2017 21:16:10'!
 chargeWithExpiredCardErrorMessage
 	^ 'Credit Card is expired'.! !
 
-!Cashier methodsFor: 'evaluating' stamp: 'BAB 10/30/2017 17:19:01'!
-initializeWithPaymentProcessor: aPaymentProcessor onDate: aCurrentDate
-	paymentProcessor :=  aPaymentProcessor.
-	currentDate := aCurrentDate.! !
-
-
-!Cashier methodsFor: 'private' stamp: 'asdf 10/30/2017 19:01:38'!
-initializePaymentProcessor: aPaymentProcessor withBookOfSales: anOrderedCollection 
+!Cashier methodsFor: 'evaluating' stamp: 'BAB 11/5/2017 14:21:43'!
+initializeWithPaymentProcessor: aPaymentProcessor withBookOfSales: aSalesBook
 	paymentProcessor _ aPaymentProcessor.
-	bookOfSales _ anOrderedCollection.! !
+	bookOfSales _ aSalesBook.! !
 
 
 !Cashier methodsFor: 'error handling' stamp: 'asdf 10/30/2017 20:45:05'!
@@ -548,6 +583,125 @@ cannotChargeEmptyCartErrorMessage
 Cashier class
 	instanceVariableNames: ''!
 
-!Cashier class methodsFor: 'initialization' stamp: 'asdf 10/30/2017 19:00:33'!
-withPaymentProcessor: aTusLibrosTest withBookOfSales: anOrderedCollection 
-	^ self new initializePaymentProcessor: aTusLibrosTest withBookOfSales: anOrderedCollection.! !
+!Cashier class methodsFor: 'initialization' stamp: 'BAB 11/5/2017 12:00:14'!
+withPaymentProcessor: aTusLibrosTest withBookOfSales: anOrderedCollection
+	^ self new
+		initializeWithPaymentProcessor: aTusLibrosTest
+		withBookOfSales: anOrderedCollection.! !
+
+
+!classDefinition: #PurchasesDetail category: #TusLibros!
+Object subclass: #PurchasesDetail
+	instanceVariableNames: 'productQuantities itemsSummary totalAmount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!PurchasesDetail methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 16:54:34'!
+initializeWithItemsSummary: anItemsSummary withTotalAmount: aTotalAmount
+	itemsSummary _ anItemsSummary.
+	totalAmount _ aTotalAmount. 
+! !
+
+!PurchasesDetail methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 17:02:38'!
+isEmpty
+	^ itemsSummary isEmpty.! !
+
+!PurchasesDetail methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 17:02:47'!
+quantityOf: aProduct
+	^ itemsSummary at: aProduct.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'PurchasesDetail class' category: #TusLibros!
+PurchasesDetail class
+	instanceVariableNames: 'itemsSummary totalAmount'!
+
+!PurchasesDetail class methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 16:54:47'!
+withSales: someSalesToDetail
+	| anItemsSummary aTotalAmount |
+	anItemsSummary _ Dictionary new.
+	someSalesToDetail do: [ :aSale |
+		
+		aSale itemsSummary keysAndValuesDo: [:aProduct :aQuantity | | prevProductQuantity | 
+			prevProductQuantity _ anItemsSummary at: aProduct ifAbsent: 0.
+			anItemsSummary at: aProduct put: (aQuantity + prevProductQuantity). 	
+		]
+	].
+	
+	aTotalAmount _ 0.
+	someSalesToDetail ifNotEmpty: [
+		aTotalAmount _ someSalesToDetail sum: [:aSale | aSale totalAmount].
+		
+	].
+	^ self new initializeWithItemsSummary: anItemsSummary withTotalAmount: aTotalAmount! !
+
+
+!classDefinition: #Sale category: #TusLibros!
+Object subclass: #Sale
+	instanceVariableNames: 'itemsSummary card totalAmount'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!Sale methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 15:58:41'!
+initializeWithItemsSummary: anItemsSummary withCard: aCard withTotalAmount: aTotalAmount 
+	itemsSummary _ anItemsSummary.
+	card _ aCard.
+	totalAmount _ aTotalAmount.! !
+
+!Sale methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 17:00:51'!
+itemsSummary
+	^ itemsSummary.! !
+
+!Sale methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 16:15:19'!
+totalAmount
+	^ totalAmount.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Sale class' category: #TusLibros!
+Sale class
+	instanceVariableNames: 'itemsSummary'!
+
+!Sale class methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 17:02:08'!
+of: anItemsSummary withCard: aCard withTotalAmount: aTotalAmount
+	^ self new initializeWithItemsSummary: anItemsSummary withCard: aCard withTotalAmount: aTotalAmount.! !
+
+
+!classDefinition: #Session category: #TusLibros!
+Object subclass: #Session
+	instanceVariableNames: 'clock duration expirable lastTimeUsed'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!Session methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 18:41:11'!
+assertNotExpired
+	(clock now - lastTimeUsed < duration) ifFalse: [Error signal: self class expiratedSessionErrorMessage ]! !
+
+!Session methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 18:39:34'!
+doesNotUnderstand: aMessage
+	self assertNotExpired.
+	^ aMessage sendTo: expirable.! !
+
+!Session methodsFor: 'as yet unclassified' stamp: 'BAB 11/5/2017 18:37:08'!
+initializeOf: anExpirable withClock: aClock for: aDuration 
+	expirable _ anExpirable .
+	clock _ aClock.
+	duration _ aDuration.
+	lastTimeUsed  _ clock now.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Session class' category: #TusLibros!
+Session class
+	instanceVariableNames: ''!
+
+!Session class methodsFor: 'accessing' stamp: 'BAB 11/5/2017 18:41:24'!
+expiratedSessionErrorMessage
+	^ 'Session has expirated'! !
+
+!Session class methodsFor: 'accessing' stamp: 'BAB 11/5/2017 18:36:20'!
+of: anExpirable withClock: aClock for: aDuration 
+	^ self new initializeOf: anExpirable withClock: aClock for: aDuration .! !
