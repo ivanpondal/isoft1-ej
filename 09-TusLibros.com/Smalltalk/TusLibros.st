@@ -502,6 +502,51 @@ test24TwoDifferentClientsShouldHaveTheirOwnPurchases
 	self assert: secondClientPurchasesList isEmpty.
 	! !
 
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:48:18'!
+test25DoubleCheckoutCartShouldFail
+	| aCartInterface aClientPassword aClient aCreatedCartId |
+	aClient _ 'pepito'.
+	aClientPassword _ 'ahorasi'.
+	aCartInterface _ self
+		aCartInterfaceWithRegisteredClient: aClient
+		andPassword: aClientPassword.
+	aCreatedCartId _ aCartInterface
+		createCartForClient: aClient
+		withPassword: aClientPassword.
+	
+	
+	aCartInterface
+		add: 2
+		copiesOf: 'aBook'
+		toCartWithId: aCreatedCartId.
+	
+	aCartInterface
+		checkoutCartWithId: aCreatedCartId
+		usingCardNumber: '22222222'
+		withExpirationDate:
+			(GregorianMonthOfYear
+				yearNumber: 2022
+				monthNumber: 2)
+		withCardOwnerName: 'pepe'
+		onDate: self todayDate.
+	
+	blockOnDebit _ [:aCard :anAmount | self fail ].
+	
+	self
+		should: [ 
+			aCartInterface
+		checkoutCartWithId: aCreatedCartId
+		usingCardNumber: '22222222'
+		withExpirationDate:
+			(GregorianMonthOfYear
+				yearNumber: 2022
+				monthNumber: 2)
+		withCardOwnerName: 'pepe'
+		onDate: self todayDate. ]
+		raise: Error - MessageNotUnderstood
+		withExceptionDo: [ :anError |
+			self assert: RESTInterface cartDoesNotExistErrorMessage  equals: anError messageText].! !
+
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'asdf 10/30/2017 21:24:33'!
 todayDate
 	^  (FixedGregorianDate yearNumber: 2017 monthNumber: 2 dayNumber: 12).! !
@@ -795,21 +840,25 @@ authenticateClient: aClient withPassword: aPassword
 	(registeredClients includesKey: aClient) ifFalse: [ Error signal: self invalidClientErrorMessage ].
 	(registeredClients at: aClient) = aPassword ifFalse: [ Error signal: self incorrectAuthenticationErrorMessage ].! !
 
-!RESTInterface methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 16:53:55'!
+!RESTInterface methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 17:50:36'!
 checkoutCartWithId: aCartId usingCardNumber: aCardNumber withExpirationDate: anExpirationDate withCardOwnerName: aCardOwnerName onDate: aDate
-	| aCard aCartSession |
+	| aCard aCartSession aTransactionId |
 	aCard _ Card
 		withNumber: aCardNumber
 		withExpirationDate: anExpirationDate
 		withOwner: aCardOwnerName.
 	aCartSession _ self cartSessionWithId: aCartId.
 
-	^ (Cashier
+	aTransactionId _ (Cashier
 		charge: aCard
 		withCart: aCartSession
 		onDate: aDate
 		withPaymentProcessor: paymentProcessor
-		withSalesBookChapter: (self salesBookChapterForClientId: aCartSession client)) transactionId.! !
+		withSalesBookChapter: (self salesBookChapterForClientId: aCartSession client)) transactionId.
+	
+	self deleteCartSessionWithId: aCartId.
+	
+	^ aTransactionId.! !
 
 !RESTInterface methodsFor: 'evaluating' stamp: 'ip 11/6/2017 02:28:26'!
 createCartForClient: aClient withPassword: aPassword
@@ -843,9 +892,13 @@ salesBookChapterForClientId: aClientId
 	^ salesBook at: aClientId ifAbsentPut: [ OrderedCollection new].! !
 
 
-!RESTInterface methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:28:26'!
+!RESTInterface methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:49:56'!
 cartSessionWithId: aCartId
-	^ cartSessionsRepository at: aCartId.! !
+	^ cartSessionsRepository at: aCartId ifAbsent: [Error signal: self class cartDoesNotExistErrorMessage].! !
+
+!RESTInterface methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:52:33'!
+deleteCartSessionWithId: aCartId 
+	cartSessionsRepository removeKey: aCartId.! !
 
 !RESTInterface methodsFor: 'as yet unclassified' stamp: 'asdf 11/2/2017 20:02:18'!
 incorrectAuthenticationErrorMessage
@@ -878,6 +931,11 @@ cartSessionExpirationTime
 !RESTInterface class methodsFor: 'initialization' stamp: 'ip 11/6/2017 00:58:39'!
 withRegisteredClients: someRegisteredClients withCatalogue: aCatalogue withPaymentProcessor: aPaymentProcessor withClock: aClock withSalesBook: aSalesBook
 	^ self new initializeWithRegisteredClients:  someRegisteredClients withCatalogue: aCatalogue withPaymentProcessor: aPaymentProcessor withClock: aClock withSalesBook: aSalesBook.! !
+
+
+!RESTInterface class methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:53:14'!
+cartDoesNotExistErrorMessage
+	'Cart Does Not Exist' .! !
 
 
 !classDefinition: #Session category: #TusLibros!
