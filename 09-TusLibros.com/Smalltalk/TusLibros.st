@@ -33,6 +33,36 @@ test03CartCantAddBookNotBelongingToItsCatalogue
 			self assert: anError messageText = aCartWithEmptyCatalogue itemDoesNotBelongToCatalogueMessage.
 			self assert: aCartWithEmptyCatalogue isEmpty ].! !
 
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 13:41:52'!
+test03CartCantAddNonIntegerQuantityOfABook
+	| aCart aBook |
+	aBook _ '1111'.
+	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
+	self
+		should: [
+			aCart add: 1.5 copiesOf: aBook ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self assert: Summary cannotAddNonIntegerQuantityOfAnItemErrorMessage equals: anError messageText.
+			self assert: aCart isEmpty ].! !
+
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 13:45:37'!
+test03CartCantAddNonPositiveQuantityOfABook
+	| aCart aBook |
+	aBook _ '1111'.
+	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
+	self
+		should: [
+			aCart
+				add: -1
+				copiesOf: aBook ]
+		raise: Error
+		withExceptionDo: [ :anError |
+			self
+				assert: Summary cannotAddNonPositiveQuantityOfAnItemErrorMessage
+				equals: anError messageText.
+			self assert: aCart isEmpty ].! !
+
 !TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 03:23:26'!
 test04CheckOutOfEmptyCartFails
 	| anEmptyCart aCard aSalesBookChapter |
@@ -625,8 +655,6 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-
-
 !Cashier methodsFor: 'private' stamp: 'ip 11/6/2017 03:32:51'!
 initializeCharge: aCard withCart: aCart onDate: aFixedDate WithPaymentProcessor: paymentProcessor withSalesBookChapter: salesBookChapter 
 	aCart isEmpty ifTrue: [ Error signal: self class cannotChargeEmptyCartErrorMessage ].
@@ -828,11 +856,17 @@ initializeWithCatalogue: aCatalogue
 	items _ Dictionary new.! !
 
 
-!Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 02:44:52'!
-add: aQuantityToAdd copiesOf: anItem 
+!Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 13:44:53'!
+add: aQuantityToAdd copiesOf: anItem
 	| originalQuantity |
-	originalQuantity _ items at: anItem ifAbsentPut: [ 0 ].
-	items at: anItem put: originalQuantity + aQuantityToAdd.! !
+	aQuantityToAdd < 1 ifTrue: [ Error signal: self class cannotAddNonPositiveQuantityOfAnItemErrorMessage ].
+	aQuantityToAdd isInteger not ifTrue: [ Error signal: self class cannotAddNonIntegerQuantityOfAnItemErrorMessage ].
+	originalQuantity _ items
+		at: anItem
+		ifAbsentPut: [ 0 ].
+	items
+		at: anItem
+		put: originalQuantity + aQuantityToAdd.! !
 
 !Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 02:47:25'!
 isEmpty
@@ -864,3 +898,17 @@ Summary class
 !Summary class methodsFor: 'initialization' stamp: 'ip 11/6/2017 02:41:29'!
 withCatalogue: aCatalogue 
 	^ self new initializeWithCatalogue: aCatalogue.! !
+
+
+!Summary class methodsFor: 'accessing' stamp: 'ip 11/6/2017 13:43:35'!
+cannotAddNonIntegerQuantityOfAnItemErrorMessage
+	^ 'Cannot add non integer quantity of an item'! !
+
+!Summary class methodsFor: 'accessing' stamp: 'ip 11/6/2017 13:44:53'!
+cannotAddNonPositiveQuantityOfAnItemErrorMessage
+	^ 'Cannot add a negative amount of items'.! !
+
+
+!Summary class methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 13:45:03'!
+cannotAddNegativeQuantityOfAnItemErrorMessage
+	^ 'Cannot add a non positive amount of items'! !
