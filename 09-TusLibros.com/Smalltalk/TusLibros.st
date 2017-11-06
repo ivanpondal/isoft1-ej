@@ -33,7 +33,7 @@ test03CartCantAddBookNotBelongingToItsCatalogue
 			self assert: anError messageText = aCartWithEmptyCatalogue itemDoesNotBelongToCatalogueMessage.
 			self assert: aCartWithEmptyCatalogue isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 13:41:52'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:37:10'!
 test03CartCantAddNonIntegerQuantityOfABook
 	| aCart aBook |
 	aBook _ '1111'.
@@ -43,10 +43,10 @@ test03CartCantAddNonIntegerQuantityOfABook
 			aCart add: 1.5 copiesOf: aBook ]
 		raise: Error
 		withExceptionDo: [ :anError |
-			self assert: Summary cannotAddNonIntegerQuantityOfAnItemErrorMessage equals: anError messageText.
+			self assert: Cart cannotAddNonIntegerQuantityOfAnItemErrorMessage equals: anError messageText.
 			self assert: aCart isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 13:45:37'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:37:24'!
 test03CartCantAddNonPositiveQuantityOfABook
 	| aCart aBook |
 	aBook _ '1111'.
@@ -59,16 +59,16 @@ test03CartCantAddNonPositiveQuantityOfABook
 		raise: Error
 		withExceptionDo: [ :anError |
 			self
-				assert: Summary cannotAddNonPositiveQuantityOfAnItemErrorMessage
+				assert: Cart cannotAddNonPositiveQuantityOfAnItemErrorMessage
 				equals: anError messageText.
 			self assert: aCart isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 03:23:26'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:37:40'!
 test04CheckOutOfEmptyCartFails
 	| anEmptyCart aCard aSalesBookChapter |
 	anEmptyCart _ Cart withCatalogue: Set new.
 	aCard _ '234534'.
-	aSalesBookChapter _ Summary withCatalogue: Set new.
+	aSalesBookChapter _ OrderedCollection new.
 		
 	self
 		should: [
@@ -83,13 +83,13 @@ test04CheckOutOfEmptyCartFails
 			self assert: anError messageText = Cashier cannotChargeEmptyCartErrorMessage.
 			self assert: aSalesBookChapter isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 03:29:51'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:26:25'!
 test05CheckOutWithOneBook
 	| aBook aCart aSalesBookChapter |
 	aBook _ '1111'.
 	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
 	aCart add: aBook.
-	aSalesBookChapter _ Summary withCatalogue: (self aCatalogueWith: aBook).
+	aSalesBookChapter _ OrderedCollection new.
 	Cashier
 		charge: self validCard
 		withCart: aCart
@@ -183,13 +183,13 @@ test08ChargeWithNoCreditCardFails
 				equals: anError messageText.
 			self assert: aSalesBook isEmpty ].! !
 
-!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 03:35:58'!
+!TusLibrosTest methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:27:01'!
 test09ChargeWithValidCreditCardSucceeds
 	| aCart aCard aSalesBook aBook aTransactionId |
 	aBook _ 'a book'.
 	aCart _ Cart withCatalogue: (self aCatalogueWith: aBook).
 	aCart add: aBook.
-	aSalesBook _ Summary withCatalogue: (self aCatalogueWith: aBook).
+	aSalesBook _ OrderedCollection new.
 	aCard _ self validCard.
 
 	aTransactionId _ '1234'.
@@ -593,55 +593,73 @@ withNumber: aCreditCardNumber withExpirationDate: anExpirationDate withOwner: an
 
 !classDefinition: #Cart category: #TusLibros!
 Object subclass: #Cart
-	instanceVariableNames: 'itemsSummary catalogue'
+	instanceVariableNames: 'itemsSummary catalogue totalPrice quantities'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:38:51'!
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:02:24'!
 add: anItem
-	self add: 1 copiesOf: anItem! !
-
-!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:38:33'!
-add: aQuantityToAdd copiesOf: anItem
+	| originalQuantities |
 	(catalogue includesKey: anItem) ifFalse: [ Error signal: self itemDoesNotBelongToCatalogueMessage ].
-	itemsSummary add: aQuantityToAdd copiesOf: anItem.! !
+	totalPrice _ totalPrice + (catalogue at: anItem).
+	originalQuantities _ quantities at: anItem ifAbsent: 0.
+	quantities at: anItem put: (originalQuantities + 1).! !
 
-!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:39:16'!
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:31:58'!
+add: aQuantityToAdd copiesOf: anItem
+	aQuantityToAdd < 1 ifTrue: [ Error signal: self class cannotAddNonPositiveQuantityOfAnItemErrorMessage ].
+	aQuantityToAdd isInteger not ifTrue: [ Error signal: self class cannotAddNonIntegerQuantityOfAnItemErrorMessage ].
+	aQuantityToAdd timesRepeat: [self add: anItem].! !
+
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:02:35'!
 copiesOf: anItem
-	^ itemsSummary quantityOf: anItem.! !
+	^ quantities at: anItem.! !
 
-!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:42:37'!
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:01:07'!
 initializeWithCatalogue: aCatalogue
 	catalogue _ aCatalogue.
-	itemsSummary _ Summary withCatalogue: aCatalogue.! !
+	quantities _ Dictionary new.
+	totalPrice _ 0.! !
 
-!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:39:24'!
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:01:19'!
 isEmpty
-	^ itemsSummary isEmpty.! !
+	^ quantities isEmpty.! !
 
 !Cart methodsFor: 'as yet unclassified' stamp: 'BAB 10/28/2017 18:20:23'!
 itemDoesNotBelongToCatalogueMessage
 	^ 'Libro no esta en catalogo'.! !
 
-!Cart methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:46:52'!
+!Cart methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:04:39'!
 totalPrice
-	^ itemsSummary totalPrice! !
+	^ totalPrice copy.! !
 
 
-!Cart methodsFor: 'accessing' stamp: 'ip 11/6/2017 03:07:43'!
-itemsDo: aBlock
-	itemsSummary itemsDo: aBlock.! !
+!Cart methodsFor: 'accessing' stamp: 'BAB 11/6/2017 17:36:23'!
+paymentSummary
+	^ PaymentSummary withQuantites: quantities withTotalPrice: totalPrice.! !
 
-!Cart methodsFor: 'accessing' stamp: 'ip 11/6/2017 03:11:03'!
-summary
-	^ itemsSummary copy.! !
+!Cart methodsFor: 'accessing' stamp: 'BAB 11/6/2017 17:03:05'!
+quantities
+	^ quantities copy.! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
 
 !classDefinition: 'Cart class' category: #TusLibros!
 Cart class
 	instanceVariableNames: ''!
+
+!Cart class methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:30:48'!
+cannotAddNegativeQuantityOfAnItemErrorMessage
+	^ 'Cannot add a non positive amount of items'.! !
+
+!Cart class methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:31:12'!
+cannotAddNonIntegerQuantityOfAnItemErrorMessage
+	^ 'Cannot add non integer quantity of an item'! !
+
+!Cart class methodsFor: 'as yet unclassified' stamp: 'BAB 11/6/2017 17:31:25'!
+cannotAddNonPositiveQuantityOfAnItemErrorMessage
+	^ 'Cannot add a negative amount of items'.! !
 
 !Cart class methodsFor: 'as yet unclassified' stamp: 'BAB 10/26/2017 20:33:03'!
 withCatalogue: aCatalogue
@@ -655,14 +673,16 @@ Object subclass: #Cashier
 	poolDictionaries: ''
 	category: 'TusLibros'!
 
-!Cashier methodsFor: 'private' stamp: 'ip 11/6/2017 03:32:51'!
-initializeCharge: aCard withCart: aCart onDate: aFixedDate WithPaymentProcessor: paymentProcessor withSalesBookChapter: salesBookChapter 
+!Cashier methodsFor: 'private' stamp: 'BAB 11/6/2017 17:35:48'!
+initializeCharge: aCard withCart: aCart onDate: aFixedDate WithPaymentProcessor: paymentProcessor withSalesBookChapter: salesBookChapter
+	| aReceipt |
 	aCart isEmpty ifTrue: [ Error signal: self class cannotChargeEmptyCartErrorMessage ].
 	aFixedDate < aCard expirationDate firstDate ifFalse: [ Error signal: self class chargeWithExpiredCardErrorMessage ].
 	transactionId _ paymentProcessor
 		debit: aCart totalPrice
 		from: aCard.
-	aCart itemsDo: [ :aBook | salesBookChapter add: (aCart copiesOf: aBook) copiesOf: aBook ].! !
+	aReceipt _ aCart paymentSummary.
+	salesBookChapter add: aReceipt.! !
 
 
 !Cashier methodsFor: 'accessing' stamp: 'ip 11/6/2017 03:36:14'!
@@ -689,6 +709,72 @@ chargeWithExpiredCardErrorMessage
 	^ 'Credit Card is expired'.! !
 
 
+!classDefinition: #PaymentSummary category: #TusLibros!
+Object subclass: #PaymentSummary
+	instanceVariableNames: 'catalogue items totalPrice quantities'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'TusLibros'!
+
+!PaymentSummary methodsFor: 'private' stamp: 'BAB 11/6/2017 16:23:40'!
+initializeWithQuantities: someQuantities withTotalPrice: aTotalPrice
+	quantities _ someQuantities.
+	totalPrice _ aTotalPrice.! !
+
+
+!PaymentSummary methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 16:23:40'!
+isEmpty
+	^ quantities isEmpty.! !
+
+!PaymentSummary methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 17:16:12'!
+quantitiesDo: aBlockClosure
+	^ quantities keysAndValuesDo: aBlockClosure.! !
+
+!PaymentSummary methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 16:24:42'!
+size
+	^ quantities size.! !
+
+!PaymentSummary methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 16:24:17'!
+totalPrice
+	^ totalPrice! !
+
+
+!PaymentSummary methodsFor: 'accessing' stamp: 'BAB 11/6/2017 16:23:49'!
+quantityOf: anItem 
+	^ quantities at: anItem.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'PaymentSummary class' category: #TusLibros!
+PaymentSummary class
+	instanceVariableNames: ''!
+
+!PaymentSummary class methodsFor: 'initialization' stamp: 'BAB 11/6/2017 17:24:46'!
+assertAreValidQuantites: someQuantities 
+! !
+
+!PaymentSummary class methodsFor: 'initialization' stamp: 'BAB 11/6/2017 16:26:57'!
+withQuantites: someQuantites withTotalPrice: aTotalPrice
+	self assertAreValidQuantites: someQuantites.
+	^ self new initializeWithQuantities: someQuantites withTotalPrice: aTotalPrice.! !
+
+!PaymentSummary class methodsFor: 'initialization' stamp: 'BAB 11/6/2017 17:22:55'!
+withReceipts: someReceipts
+	| someQuantities aTotalPrice |
+	someQuantities _ Dictionary new.
+	aTotalPrice _ 0.
+	
+	someReceipts do: [:aReceipt | 
+		aReceipt quantitiesDo: [:anItem :aQuantity | | originalQuantity |
+			originalQuantity _ someQuantities at: anItem ifAbsent: 0.
+			someQuantities at: anItem put: originalQuantity + aQuantity.]].
+	
+	^ self new initializeWithQuantities: someQuantities withTotalPrice: aTotalPrice.
+	! !
+
+
+
+
 !classDefinition: #RESTInterface category: #TusLibros!
 Object subclass: #RESTInterface
 	instanceVariableNames: 'catalogue registeredClients salesBook paymentProcessor clock cartSessionsRepository'
@@ -709,7 +795,7 @@ authenticateClient: aClient withPassword: aPassword
 	(registeredClients includesKey: aClient) ifFalse: [ Error signal: self invalidClientErrorMessage ].
 	(registeredClients at: aClient) = aPassword ifFalse: [ Error signal: self incorrectAuthenticationErrorMessage ].! !
 
-!RESTInterface methodsFor: 'evaluating' stamp: 'ip 11/6/2017 03:39:39'!
+!RESTInterface methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 16:53:55'!
 checkoutCartWithId: aCartId usingCardNumber: aCardNumber withExpirationDate: anExpirationDate withCardOwnerName: aCardOwnerName onDate: aDate
 	| aCard aCartSession |
 	aCard _ Card
@@ -743,18 +829,18 @@ createCartForClient: aClient withPassword: aPassword
 		put: aCartSession.
 	^ aCreatedCartId.! !
 
-!RESTInterface methodsFor: 'evaluating' stamp: 'ip 11/6/2017 03:11:24'!
+!RESTInterface methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 17:36:36'!
 listCart: aCartId
-	^ (self cartSessionWithId: aCartId) summary! !
+	^ (self cartSessionWithId: aCartId) paymentSummary.! !
 
-!RESTInterface methodsFor: 'evaluating' stamp: 'ip 11/6/2017 02:19:24'!
+!RESTInterface methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 17:23:21'!
 listPurchasesForClient: aClient withPassword: aPassword 
 	self authenticateClient: aClient withPassword: aPassword.
-	^ self salesBookChapterForClientId: aClient.! !
+	^ PaymentSummary withReceipts: (self salesBookChapterForClientId: aClient).! !
 
-!RESTInterface methodsFor: 'evaluating' stamp: 'ip 11/6/2017 02:50:06'!
+!RESTInterface methodsFor: 'evaluating' stamp: 'BAB 11/6/2017 17:05:03'!
 salesBookChapterForClientId: aClientId 
-	^ salesBook at: aClientId ifAbsentPut: [ Summary withCatalogue: catalogue].! !
+	^ salesBook at: aClientId ifAbsentPut: [ OrderedCollection new].! !
 
 
 !RESTInterface methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 02:28:26'!
@@ -841,74 +927,3 @@ of: anExpirable withClock: aClock for: aDuration belongingToClient: aClient
 		withClock: aClock
 		for: aDuration
 		belongingToClient: aClient.! !
-
-
-!classDefinition: #Summary category: #TusLibros!
-Object subclass: #Summary
-	instanceVariableNames: 'catalogue items'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'TusLibros'!
-
-!Summary methodsFor: 'private' stamp: 'ip 11/6/2017 02:45:19'!
-initializeWithCatalogue: aCatalogue 
-	catalogue _ aCatalogue.
-	items _ Dictionary new.! !
-
-
-!Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 13:44:53'!
-add: aQuantityToAdd copiesOf: anItem
-	| originalQuantity |
-	aQuantityToAdd < 1 ifTrue: [ Error signal: self class cannotAddNonPositiveQuantityOfAnItemErrorMessage ].
-	aQuantityToAdd isInteger not ifTrue: [ Error signal: self class cannotAddNonIntegerQuantityOfAnItemErrorMessage ].
-	originalQuantity _ items
-		at: anItem
-		ifAbsentPut: [ 0 ].
-	items
-		at: anItem
-		put: originalQuantity + aQuantityToAdd.! !
-
-!Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 02:47:25'!
-isEmpty
-	^ items isEmpty.! !
-
-!Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 03:08:11'!
-itemsDo: aBlockClosure
-	^ items keysDo: aBlockClosure.! !
-
-!Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 03:38:11'!
-size
-	^ items size.! !
-
-!Summary methodsFor: 'evaluating' stamp: 'ip 11/6/2017 02:47:05'!
-totalPrice
-	^ items keys inject: 0 into: [ :subTotal :item | (catalogue at: item) * (items at: item) + subTotal ]! !
-
-
-!Summary methodsFor: 'accessing' stamp: 'ip 11/6/2017 03:00:05'!
-quantityOf: anItem 
-	^ items at: anItem.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Summary class' category: #TusLibros!
-Summary class
-	instanceVariableNames: ''!
-
-!Summary class methodsFor: 'initialization' stamp: 'ip 11/6/2017 02:41:29'!
-withCatalogue: aCatalogue 
-	^ self new initializeWithCatalogue: aCatalogue.! !
-
-
-!Summary class methodsFor: 'accessing' stamp: 'ip 11/6/2017 13:43:35'!
-cannotAddNonIntegerQuantityOfAnItemErrorMessage
-	^ 'Cannot add non integer quantity of an item'! !
-
-!Summary class methodsFor: 'accessing' stamp: 'ip 11/6/2017 13:44:53'!
-cannotAddNonPositiveQuantityOfAnItemErrorMessage
-	^ 'Cannot add a negative amount of items'.! !
-
-
-!Summary class methodsFor: 'as yet unclassified' stamp: 'ip 11/6/2017 13:45:03'!
-cannotAddNegativeQuantityOfAnItemErrorMessage
-	^ 'Cannot add a non positive amount of items'! !
