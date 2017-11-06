@@ -1,8 +1,0 @@
-CreditCard creation
- - Valid name
- - Valid number
-
-Cart
- - Cannot use rational values when adding to cart
- - Cannot use negative values when adding to cart
- - Can add several copies of the same book
