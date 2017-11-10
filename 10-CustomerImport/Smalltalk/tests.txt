@@ -1,0 +1,18 @@
+no puedo importar direcciones sin un customer
+cannotimport addreswithoutcustomer
+
+	assert numberofcustomers == 0
+
+
+doesnotimportrecordsstartingwithCButMoreCharacters
+
+doesnotimportrecordsstartingwithAButMoreCharacters
+	pero se tiene que agregar el customer!
+
+can not import  addres record with less than six fields
+
+can not import  addres record with more than six fields
+
+
+
+can not import  customer record with less than six fields
